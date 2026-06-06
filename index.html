@@ -4,17 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taifa Market - Twende Shop Tukafanye Shopping</title>
+    <!-- Google Analytics - Your GitHub Pages URL: https://sstevekinuthia-byte.github.io/taifa-market -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3JYQ3N9H8B"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-3JYQ3N9H8B');
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary: #e74c3c; --secondary: #f39c12; --dark: #2c3e50; --light: #ecf0f1; --accent: #27ae60; --coin: #d4af37; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f6fa; color: var(--dark); line-height: 1.6; }
+
+        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); z-index: 5000; display: flex; justify-content: center; align-items: center; overflow-y: auto; }
+        .auth-overlay.hidden { display: none; }
+        .auth-container { background: white; border-radius: 24px; padding: 3rem; width: 90%; max-width: 480px; animation: slideIn 0.5s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .auth-logo { text-align: center; margin-bottom: 2rem; }
+        .auth-logo i { font-size: 4rem; color: var(--primary); }
+        .auth-logo h1 { color: var(--dark); margin-top: 0.5rem; font-size: 1.8rem; }
+        .auth-logo p { color: #888; margin-top: 0.3rem; }
+        .auth-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #f0f2f5; padding: 0.5rem; border-radius: 12px; }
+        .auth-tab { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; background: transparent; color: #666; transition: all 0.3s; font-family: inherit; }
+        .auth-tab.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(231,76,60,0.3); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .taifa-number-display { background: linear-gradient(135deg, #d4af37, #f1c40f); color: #2c3e50; padding: 1.5rem; border-radius: 16px; text-align: center; margin: 1.5rem 0; }
+        .taifa-number-display h3 { margin-bottom: 0.5rem; font-size: 1rem; }
+        .taifa-number { font-size: 2rem; font-weight: bold; letter-spacing: 2px; }
+        .taifa-number-display p { font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.8; }
+
+        .app-container { display: none; }
+        .app-container.active { display: block; }
         nav { position: fixed; top: 0; width: 100%; background: rgba(44,62,80,0.95); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; z-index: 1000; backdrop-filter: blur(10px); }
-        .logo { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; }
+        .logo { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
         .nav-links a { color: white; text-decoration: none; font-weight: 500; transition: color 0.3s; cursor: pointer; }
         .nav-links a:hover { color: var(--secondary); }
         .mobile-menu-btn { display: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .user-info { display: flex; align-items: center; gap: 1rem; color: white; }
+        .user-info span { font-size: 0.9rem; }
+        .logout-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+
         .hero { position: relative; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .bg-slideshow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         .bg-slide { position: absolute; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 2s ease-in-out; filter: brightness(0.4); }
@@ -29,6 +62,11 @@
         .btn-secondary:hover { background: white; color: var(--dark); }
         .btn-coin { background: linear-gradient(135deg, #d4af37, #f1c40f); color: #2c3e50; border: 2px solid #d4af37; }
         .btn-coin:hover { background: linear-gradient(135deg, #c5a028, #e0b90f); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,175,55,0.4); }
+        .btn-success { background: var(--accent); color: white; }
+        .btn-success:hover { background: #219a52; }
+        .btn-dark { background: var(--dark); color: white; }
+        .btn-dark:hover { background: #34495e; }
+
         .section { padding: 4rem 5%; max-width: 1400px; margin: 0 auto; }
         .section-header { text-align: center; margin-bottom: 3rem; }
         .section-header h2 { font-size: 2.5rem; color: var(--dark); margin-bottom: 0.5rem; }
@@ -42,10 +80,15 @@
         .item-location { color: #666; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; }
         .item-actions { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
         .item-actions button { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s; font-weight: 600; font-family: inherit; }
+        .btn-view { background: var(--dark); color: white; }
+        .btn-view:hover { background: #34495e; }
+        .btn-buy { background: var(--accent); color: white; }
+        .btn-buy:hover { background: #219a52; }
         .btn-chat { background: var(--accent); color: white; }
         .btn-chat:hover { background: #219a52; }
         .btn-call { background: var(--primary); color: white; }
         .btn-call:hover { background: #c0392b; }
+
         .comments-box { border-top: 1px solid #eee; padding-top: 1rem; margin-top: auto; }
         .comments-box h4 { font-size: 0.9rem; margin-bottom: 0.6rem; color: #888; }
         .comments-list { max-height: 120px; overflow-y: auto; margin-bottom: 0.8rem; }
@@ -54,6 +97,7 @@
         .comment-input { display: flex; gap: 0.5rem; }
         .comment-input input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; }
         .comment-input button { padding: 8px 14px; background: var(--dark); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
         .modal { background: white; border-radius: 20px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: slideIn 0.3s ease; position: relative; }
@@ -64,59 +108,42 @@
         .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; color: #555; font-size: 0.9rem; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 1rem; font-family: inherit; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
-        .image-preview { width: 100%; height: 180px; border: 2px dashed #ccc; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; background: #fafafa; cursor: pointer; }
-        .image-preview img { max-width: 100%; max-height: 100%; object-fit: cover; }
-        .upload-placeholder { color: #999; text-align: center; pointer-events: none; }
-        .chat-modal { width: 100%; max-width: 420px; height: 520px; display: flex; flex-direction: column; padding: 0; overflow: hidden; }
-        .chat-header { background: var(--accent); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; background: #f0f2f5; display: flex; flex-direction: column; gap: 0.8rem; }
-        .message { max-width: 75%; padding: 10px 14px; border-radius: 14px; font-size: 0.9rem; line-height: 1.4; }
-        .message.sent { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .message.received { background: white; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .chat-input { display: flex; padding: 1rem; background: white; border-top: 1px solid #eee; gap: 0.5rem; }
-        .chat-input input { flex: 1; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 20px; font-size: 0.95rem; }
-        .chat-input button { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        footer { background: var(--dark); color: white; padding: 3rem 5% 1.5rem; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto; }
-        .footer-section h3 { color: var(--secondary); margin-bottom: 1rem; font-size: 1.2rem; }
-        .footer-section p, .footer-section a { color: #bdc3c7; text-decoration: none; line-height: 2; font-size: 0.95rem; }
-        .footer-section a:hover { color: var(--primary); }
-        .care-box { background: rgba(255,255,255,0.08); padding: 1.2rem; border-radius: 12px; margin-top: 0.5rem; }
-        .care-box p { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
-        .care-box i { color: var(--secondary); width: 20px; }
-        .copyright { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid #34495e; color: #7f8c8d; font-size: 0.9rem; }
-        .toast { position: fixed; bottom: 30px; right: 30px; background: var(--dark); color: white; padding: 1rem 1.5rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 3000; animation: slideInRight 0.3s ease; display: none; font-weight: 500; }
-        .toast.show { display: block; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @media (max-width: 768px) {
-            .hero-content h1 { font-size: 2.2rem; }
-            .motto { font-size: 1.1rem; }
-            .nav-links { display: none; position: absolute; top: 60px; left: 0; width: 100%; background: var(--dark); flex-direction: column; padding: 1rem; gap: 1rem; }
-            .nav-links.active { display: flex; }
-            .mobile-menu-btn { display: block; }
-            .items-grid { grid-template-columns: 1fr; }
-        }
-        .coin-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg, #d4af37, #f1c40f); color: #2c3e50; padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 2px 8px rgba(212,175,55,0.3); }
-        .coin-badge i { color: #2c3e50; }
+        .password-strength { height: 4px; background: #e0e0e0; border-radius: 2px; margin-top: 0.5rem; overflow: hidden; }
+        .password-strength-bar { height: 100%; width: 0; transition: all 0.3s; border-radius: 2px; }
+        .strength-weak { background: var(--primary); width: 33%; }
+        .strength-medium { background: var(--secondary); width: 66%; }
+        .strength-strong { background: var(--accent); width: 100%; }
+        .verify-badge { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--accent); font-size: 0.85rem; margin-top: 0.3rem; }
+
+        .image-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+        .image-preview-box { width: 100%; height: 100px; border: 2px dashed #ccc; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: #fafafa; position: relative; }
+        .image-preview-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .image-preview-box.has-image img { display: block; }
+        .image-preview-box .add-icon { color: #999; font-size: 1.5rem; }
+        .image-preview-box.has-image .add-icon { display: none; }
+        .image-preview-box input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .item-detail-modal { max-width: 700px; }
+        .item-detail-images { display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .item-detail-main-img { width: 100%; height: 300px; object-fit: cover; border-radius: 12px; }
+        .item-detail-side-images { display: flex; flex-direction: column; gap: 0.5rem; }
+        .item-detail-side-img { width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; opacity: 0.7; transition: opacity 0.3s; }
+        .item-detail-side-img:hover, .item-detail-side-img.active { opacity: 1; }
+        .item-detail-info h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .item-detail-info .price { font-size: 1.8rem; color: var(--primary); font-weight: bold; }
+        .item-detail-info .location { color: #666; margin: 0.5rem 0; }
+        .item-detail-info .seller { color: #888; margin-bottom: 1rem; }
+
+        .mpesa-prompt { background: linear-gradient(135deg, #00a650, #00c853); color: white; padding: 2rem; border-radius: 16px; text-align: center; }
+        .mpesa-prompt h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .mpesa-prompt .paybill { font-size: 2rem; font-weight: bold; letter-spacing: 3px; margin: 1rem 0; }
+        .mpesa-prompt .account { background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin: 1rem 0; }
+        .mpesa-prompt .account-label { font-size: 0.9rem; opacity: 0.9; }
+        .mpesa-prompt .account-number { font-size: 1.3rem; font-weight: bold; }
+
         .coin-section { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 3rem 5%; border-radius: 20px; margin: 2rem auto; max-width: 1400px; }
         .coin-section h2 { color: var(--coin); margin-bottom: 1rem; }
         .coin-section p { color: #bdc3c7; max-width: 800px; margin: 0 auto 1.5rem; }
-        .coin-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .coin-feature { background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; text-align: center; transition: transform 0.3s; }
-        .coin-feature:hover { transform: translateY(-5px); background: rgba(255,255,255,0.12); }
-        .coin-feature i { font-size: 2.5rem; color: var(--coin); margin-bottom: 0.8rem; }
-        .coin-feature h3 { color: white; margin-bottom: 0.5rem; font-size: 1.1rem; }
-        .coin-feature p { color: #bdc3c7; font-size: 0.9rem; }
-        .search-bar { display: flex; gap: 0.5rem; max-width: 600px; margin: 0 auto 2rem; }
-        .search-bar input { flex: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 50px; font-size: 1rem; font-family: inherit; }
-        .search-bar button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; }
-        .category-filter { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-        .category-filter button { padding: 8px 20px; border: 2px solid var(--dark); background: white; color: var(--dark); border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .category-filter button.active, .category-filter button:hover { background: var(--dark); color: white; }
-        .user-coin-balance { display: flex; align-items: center; gap: 0.5rem; color: var(--coin); font-weight: 700; font-size: 1rem; }
-        .user-coin-balance i { font-size: 1.2rem; }
         .coin-value-display { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 2rem; border-radius: 16px; text-align: center; margin-bottom: 2rem; }
         .coin-value-display h3 { color: var(--coin); margin-bottom: 0.5rem; }
         .coin-value-big { font-size: 3rem; font-weight: bold; color: var(--coin); }
@@ -131,9 +158,24 @@
         .rate-card i { font-size: 2rem; color: var(--coin); margin-bottom: 0.5rem; }
         .rate-card h4 { margin-bottom: 0.3rem; }
         .rate-card .rate { font-size: 1.3rem; font-weight: bold; color: var(--primary); }
+        .coin-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .coin-feature { background: rgba(255,255,255,0.08); padding: 1.5rem; border-radius: 12px; text-align: center; transition: transform 0.3s; }
+        .coin-feature:hover { transform: translateY(-5px); background: rgba(255,255,255,0.12); }
+        .coin-feature i { font-size: 2.5rem; color: var(--coin); margin-bottom: 0.8rem; }
+        .coin-feature h3 { color: white; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .coin-feature p { color: #bdc3c7; font-size: 0.9rem; }
+
+        .generate-coin-section { background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 2rem; border-radius: 16px; margin-top: 2rem; }
+        .generate-coin-section h3 { text-align: center; margin-bottom: 1.5rem; color: var(--dark); }
+        .mpesa-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .mpesa-step { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #e0e0e0; }
+        .mpesa-step .step-num { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 1rem; }
+        .mpesa-step h4 { margin-bottom: 0.5rem; color: var(--dark); }
+        .mpesa-step p { color: #666; font-size: 0.9rem; }
+
         .locations-section { background: white; padding: 3rem 5%; border-radius: 20px; margin: 2rem auto; max-width: 1400px; }
         .locations-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-        .location-card { background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 1.5rem; border-radius: 16px; border-left: 4px solid var(--primary); transition: all 0.3s; }
+        .location-card { background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 1.5rem; border-radius: 16px; border-left: 4px solid var(--primary); transition: all 0.3s; cursor: pointer; }
         .location-card:hover { transform: translateX(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         .location-card h3 { color: var(--dark); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
         .location-card h3 i { color: var(--primary); }
@@ -141,334 +183,541 @@
         .location-stats span { display: flex; align-items: center; gap: 0.3rem; }
         .location-items-preview { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
         .location-item-tag { background: var(--primary); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; }
-        .tmc-history-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .tmc-history-table th, .tmc-history-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #eee; }
-        .tmc-history-table th { background: #f8f9fa; font-weight: 600; color: var(--dark); }
-        .tmc-history-table tr:hover { background: #f8f9fa; }
-        .trend-up { color: var(--accent); }
-        .trend-down { color: var(--primary); }
+
+        .search-bar { display: flex; gap: 0.5rem; max-width: 600px; margin: 0 auto 2rem; }
+        .search-bar input { flex: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 50px; font-size: 1rem; font-family: inherit; }
+        .search-bar button { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; }
+        .category-filter { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+        .category-filter button { padding: 8px 20px; border: 2px solid var(--dark); background: white; color: var(--dark); border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .category-filter button.active, .category-filter button:hover { background: var(--dark); color: white; }
+
+        .user-coin-balance { display: flex; align-items: center; gap: 0.5rem; color: var(--coin); font-weight: 700; font-size: 1rem; }
+        .user-coin-balance i { font-size: 1.2rem; }
+
+        .feedback-section { background: white; padding: 3rem 5%; border-radius: 20px; margin: 2rem auto; max-width: 1400px; }
+        .feedback-form { max-width: 600px; margin: 0 auto; }
+        .feedback-list { margin-top: 2rem; }
+        .feedback-item { background: #f8f9fa; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        .feedback-item .stars { color: var(--secondary); margin-bottom: 0.5rem; }
+        .feedback-item .author { font-weight: 600; color: var(--dark); }
+        .feedback-item .text { color: #666; margin-top: 0.3rem; }
+
+        footer { background: var(--dark); color: white; padding: 3rem 5% 1.5rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto; }
+        .footer-section h3 { color: var(--secondary); margin-bottom: 1rem; font-size: 1.2rem; }
+        .footer-section p, .footer-section a { color: #bdc3c7; text-decoration: none; line-height: 2; font-size: 0.95rem; }
+        .footer-section a:hover { color: var(--primary); }
+        .care-box { background: rgba(255,255,255,0.08); padding: 1.2rem; border-radius: 12px; margin-top: 0.5rem; }
+        .care-box p { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
+        .care-box i { color: var(--secondary); width: 20px; }
+        .copyright { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid #34495e; color: #7f8c8d; font-size: 0.9rem; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: var(--dark); color: white; padding: 1rem 1.5rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 3000; animation: slideInRight 0.3s ease; display: none; font-weight: 500; }
+        .toast.show { display: block; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2.2rem; }
+            .motto { font-size: 1.1rem; }
+            .nav-links { display: none; position: absolute; top: 60px; left: 0; width: 100%; background: var(--dark); flex-direction: column; padding: 1rem; gap: 1rem; }
+            .nav-links.active { display: flex; }
+            .mobile-menu-btn { display: block; }
+            .items-grid { grid-template-columns: 1fr; }
+            .item-detail-images { grid-template-columns: 1fr; }
+            .image-preview-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <nav>
-        <div class="logo"><i class="fas fa-store"></i> Taifa Market</div>
-        <div class="nav-links" id="navLinks">
-            <a href="#home">Home</a>
-            <a href="#items">Shop</a>
-            <a href="#coin">Taifa Coin</a>
-            <a href="#locations">Locations</a>
-            <a href="#" onclick="openModal('registerModal'); return false;">Register</a>
-            <a href="#" onclick="openModal('uploadModal'); return false;">Sell Item</a>
-            <a href="#contact">Contact</a>
-            <div class="user-coin-balance" id="userCoinBalance" style="display:none;">
-                <i class="fas fa-coins"></i> <span id="coinAmount">0</span> TMC
+    <!-- AUTH OVERLAY - Shows first when page loads -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-store"></i>
+                <h1>Taifa Market</h1>
+                <p>Twende Shop Tukafanye Shopping</p>
             </div>
-        </div>
-        <div class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></div>
-    </nav>
 
-    <section id="home" class="hero">
-        <div class="bg-slideshow" id="bgSlideshow">
-            <div class="bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=1920&q=80');"></div>
-            <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1920&q=80');"></div>
-            <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1920&q=80');"></div>
-            <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80');"></div>
-        </div>
-        <div class="hero-content">
-            <h1>Taifa Market</h1>
-            <p class="motto">"Twende Shop Tukafanye Shopping"</p>
-            <div>
-                <a href="#items" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> Start Shopping</a>
-                <a href="#" class="btn btn-secondary" onclick="openModal('registerModal'); return false;"><i class="fas fa-user-plus"></i> Join Now</a>
-                <a href="#coin" class="btn btn-coin"><i class="fas fa-coins"></i> Taifa Coin</a>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Join / Register</button>
             </div>
-        </div>
-    </section>
 
-    <section id="coin" class="coin-section">
-        <div class="section-header" style="color: white;">
-            <h2><i class="fas fa-coins" style="color: var(--coin);"></i> Taifa Market Coin (TMC)</h2>
-            <p style="color: #bdc3c7;">Market-driven digital currency. Value rises with every buy and sell on the platform.</p>
-        </div>
-
-        <div class="coin-value-display">
-            <h3><i class="fas fa-chart-line"></i> Current TMC Value</h3>
-            <div class="coin-value-big" id="tmcValue">1 TMC = <span id="currentRate">12.50</span> KES</div>
-            <p style="color: #888; margin-top: 0.5rem;">Value updates in real-time based on market activity</p>
-            <div class="coin-stats">
-                <div class="coin-stat">
-                    <div class="coin-stat-label">Total Transactions</div>
-                    <div class="coin-stat-value" id="totalTransactions">1,247</div>
-                </div>
-                <div class="coin-stat">
-                    <div class="coin-stat-label">Active Users</div>
-                    <div class="coin-stat-value" id="activeUsers">856</div>
-                </div>
-                <div class="coin-stat">
-                    <div class="coin-stat-label">Items Traded</div>
-                    <div class="coin-stat-value" id="itemsTraded">3,892</div>
-                </div>
-                <div class="coin-stat">
-                    <div class="coin-stat-label">24h Change</div>
-                    <div class="coin-stat-value trend-up" id="dailyChange">+2.4%</div>
-                </div>
+            <!-- Sign In Form -->
+            <div class="auth-form active" id="signinForm">
+                <form onsubmit="handleSignIn(event); return false;">
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" id="signinMobile" placeholder="e.g. 0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signinPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem; color: #888;">
+                    Don't have an account? <a href="#" onclick="switchAuthTab('register')" style="color: var(--primary); font-weight: 600;">Register here</a>
+                </p>
             </div>
-        </div>
 
-        <div class="exchange-section">
-            <h3 style="text-align: center; margin-bottom: 1rem;"><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC for Money</h3>
-            <p style="text-align: center; color: #666; margin-bottom: 1.5rem;">Convert your earned coins directly to M-Pesa, bank transfer, or cash</p>
-            <div class="exchange-rates">
-                <div class="rate-card">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h4>M-Pesa</h4>
-                    <div class="rate" id="mpesaRate">1 TMC = 12.50 KES</div>
-                    <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">Instant to your phone</p>
-                </div>
-                <div class="rate-card">
-                    <i class="fas fa-university"></i>
-                    <h4>Bank Transfer</h4>
-                    <div class="rate" id="bankRate">1 TMC = 12.30 KES</div>
-                    <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">1-2 business days</p>
-                </div>
-                <div class="rate-card">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <h4>Cash Pickup</h4>
-                    <div class="rate" id="cashRate">1 TMC = 12.00 KES</div>
-                    <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">At any Taifa agent</p>
-                </div>
+            <!-- Register Form -->
+            <div class="auth-form" id="registerForm">
+                <form onsubmit="handleRegister(event); return false;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" id="regMobile" placeholder="e.g. 0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="Create a password" required oninput="checkPasswordStrength()">
+                        <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 0.3rem;">Min 8 chars, include numbers & symbols</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required oninput="verifyPasswordMatch()">
+                        <div class="verify-badge" id="verifyBadge" style="display:none;">
+                            <i class="fas fa-check-circle"></i> Passwords match
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Referral Code (Optional)</label>
+                        <input type="text" id="regReferral" placeholder="Enter referrer's Taifa number">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="registerBtn" disabled>
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
             </div>
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn btn-coin" onclick="openModal('exchangeModal'); return false;" style="font-size: 1.1rem; padding: 14px 40px;">
-                    <i class="fas fa-hand-holding-usd"></i> Exchange Now
+
+            <!-- Taifa Number Display (shown after registration) -->
+            <div class="taifa-number-display" id="taifaDisplay" style="display:none;">
+                <h3><i class="fas fa-id-card"></i> Your Taifa Number</h3>
+                <div class="taifa-number" id="taifaNumber">TF-000000</div>
+                <p>Save this! Use it for TMC exchanges and referrals</p>
+                <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="enterApp()">
+                    <i class="fas fa-arrow-right"></i> Enter Taifa Market
                 </button>
             </div>
         </div>
-
-        <div class="coin-features">
-            <div class="coin-feature">
-                <i class="fas fa-gift"></i>
-                <h3>Earn Rewards</h3>
-                <p>Get 10 TMC for every item sold and 5 TMC for every purchase.</p>
-            </div>
-            <div class="coin-feature">
-                <i class="fas fa-chart-line"></i>
-                <h3>Market Driven</h3>
-                <p>TMC value increases as more users buy and sell on the platform.</p>
-            </div>
-            <div class="coin-feature">
-                <i class="fas fa-percent"></i>
-                <h3>Discounts</h3>
-                <p>Use TMC to get up to 15% off on selected items.</p>
-            </div>
-            <div class="coin-feature">
-                <i class="fas fa-shield-alt"></i>
-                <h3>Secure</h3>
-                <p>Every transaction is tracked and verified on our ledger.</p>
-            </div>
-        </div>
-        <div style="text-align: center; margin-top: 2rem;">
-            <button class="btn btn-coin" onclick="openModal('coinModal'); return false;" style="font-size: 1.1rem; padding: 14px 40px;">
-                <i class="fas fa-wallet"></i> Open TMC Wallet
-            </button>
-        </div>
-    </section>
-
-    <section id="locations" class="locations-section">
-        <div class="section-header">
-            <h2><i class="fas fa-map-marked-alt" style="color: var(--primary);"></i> Market Locations</h2>
-            <p>Find items and sellers in your area</p>
-        </div>
-        <div class="locations-grid" id="locationsGrid"></div>
-    </section>
-
-    <section id="items" class="section">
-        <div class="section-header">
-            <h2>Latest Uploads</h2>
-            <p>Fresh items from sellers near you</p>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search items, brands, locations..." onkeyup="filterItems()">
-            <button onclick="filterItems()"><i class="fas fa-search"></i></button>
-        </div>
-        <div class="category-filter" id="categoryFilter">
-            <button class="active" onclick="filterCategory('all')">All</button>
-            <button onclick="filterCategory('Electronics')">Electronics</button>
-            <button onclick="filterCategory('Fashion')">Fashion</button>
-            <button onclick="filterCategory('Home')">Home</button>
-            <button onclick="filterCategory('Gaming')">Gaming</button>
-        </div>
-        <div class="items-grid" id="itemsGrid"></div>
-    </section>
-
-    <footer id="contact">
-        <div class="footer-grid">
-            <div class="footer-section">
-                <h3>About Taifa Market</h3>
-                <p>Your trusted local marketplace. Buy and sell quality items, connect with trusted sellers, and shop with confidence using Taifa Market Coin.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <p><a href="#home">Home</a></p>
-                <p><a href="#items">Browse Items</a></p>
-                <p><a href="#coin">Taifa Coin</a></p>
-                <p><a href="#locations">Locations</a></p>
-                <p><a href="#" onclick="openModal('registerModal'); return false;">Register</a></p>
-                <p><a href="#" onclick="openModal('uploadModal'); return false;">Sell an Item</a></p>
-            </div>
-            <div class="footer-section">
-                <h3>Customer Care</h3>
-                <div class="care-box">
-                    <p><i class="fas fa-phone"></i> <a href="tel:0112698570">0112 698 570</a></p>
-                    <p><i class="fas fa-envelope"></i> <a href="mailto:sngethe332@gmail.com">sngethe332@gmail.com</a></p>
-                    <p><i class="fas fa-clock"></i> Mon - Sat: 8:00 AM - 8:00 PM</p>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>Taifa Coin</h3>
-                <div class="care-box">
-                    <p><i class="fas fa-coins"></i> Earn on every transaction</p>
-                    <p><i class="fas fa-percent"></i> Up to 15% discounts</p>
-                    <p><i class="fas fa-lock"></i> Secure ledger tracking</p>
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>&copy; 2026 Taifa Market. Twende Shop Tukafanye Shopping!</p>
-        </div>
-    </footer>
-
-    <div class="modal-overlay" id="registerModal">
-        <div class="modal">
-            <button class="close-btn" onclick="closeModal('registerModal')">&times;</button>
-            <h2><i class="fas fa-user-plus"></i> Create Account</h2>
-            <form id="registerForm" onsubmit="handleRegister(event); return false;">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="regName" placeholder="Enter your full name" required>
-                </div>
-                <div class="form-group">
-                    <label>Mobile Number</label>
-                    <input type="tel" id="regMobile" placeholder="e.g. 0712345678" required>
-                </div>
-                <div class="form-group">
-                    <label>Email Address (Optional)</label>
-                    <input type="email" id="regEmail" placeholder="your@email.com">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
-            </form>
-        </div>
     </div>
 
-    <div class="modal-overlay" id="uploadModal">
-        <div class="modal">
-            <button class="close-btn" onclick="closeModal('uploadModal')">&times;</button>
-            <h2><i class="fas fa-cloud-upload-alt"></i> Upload Item</h2>
-            <form id="uploadForm" onsubmit="handleUpload(event); return false;">
-                <div class="form-group">
-                    <label>Item Photo</label>
-                    <div class="image-preview" onclick="document.getElementById('itemImage').click()">
-                        <div class="upload-placeholder">
-                            <i class="fas fa-camera" style="font-size: 2.5rem; color: #ccc; margin-bottom: 0.5rem;"></i>
-                            <p>Click to upload photo</p>
+    <!-- MAIN APP - Hidden until login -->
+    <div class="app-container" id="appContainer">
+        <nav>
+            <div class="logo" onclick="scrollToSection('home')"><i class="fas fa-store"></i> Taifa Market</div>
+            <div class="nav-links" id="navLinks">
+                <a onclick="scrollToSection('shop')">Shop</a>
+                <a onclick="scrollToSection('sell')">Sell/Upload</a>
+                <a onclick="scrollToSection('tmc')">TMC</a>
+                <a onclick="scrollToSection('locations')">Locations</a>
+                <a onclick="scrollToSection('feedback')">Feedback</a>
+                <a onclick="scrollToSection('contact')">Contact</a>
+                <div class="user-info">
+                    <div class="user-coin-balance">
+                        <i class="fas fa-coins"></i> <span id="navCoinAmount">0</span> TMC
+                    </div>
+                    <span id="navUserName">User</span>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></div>
+        </nav>
+
+        <section id="home" class="hero">
+            <div class="bg-slideshow" id="bgSlideshow">
+                <div class="bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=1920&q=80');"></div>
+                <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1920&q=80');"></div>
+                <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1920&q=80');"></div>
+                <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80');"></div>
+            </div>
+            <div class="hero-content">
+                <h1>Welcome, <span id="heroUserName">User</span>!</h1>
+                <p class="motto">"Twende Shop Tukafanye Shopping"</p>
+                <div>
+                    <button class="btn btn-primary" onclick="scrollToSection('shop')"><i class="fas fa-shopping-bag"></i> Start Shopping</button>
+                    <button class="btn btn-coin" onclick="scrollToSection('tmc')"><i class="fas fa-coins"></i> My TMC</button>
+                    <button class="btn btn-success" onclick="scrollToSection('sell')"><i class="fas fa-cloud-upload-alt"></i> Sell Item</button>
+                </div>
+                <div style="margin-top: 2rem; color: rgba(255,255,255,0.8); font-size: 0.9rem;">
+                    <span><i class="fas fa-id-card"></i> Taifa No: <span id="heroTaifaNum">TF-000000</span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SHOP SECTION -->
+        <section id="shop" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-shopping-bag" style="color: var(--primary);"></i> Shop</h2>
+                <p>Browse items for sale across all locations</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search items, brands, locations..." onkeyup="filterItems()">
+                <button onclick="filterItems()"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="category-filter" id="categoryFilter">
+                <button class="active" onclick="filterCategory('all')">All</button>
+                <button onclick="filterCategory('Electronics')">Electronics</button>
+                <button onclick="filterCategory('Fashion')">Fashion</button>
+                <button onclick="filterCategory('Home')">Home</button>
+                <button onclick="filterCategory('Gaming')">Gaming</button>
+            </div>
+            <div class="items-grid" id="itemsGrid"></div>
+        </section>
+
+        <!-- SELL/UPLOAD SECTION -->
+        <section id="sell" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-cloud-upload-alt" style="color: var(--accent);"></i> Sell Your Item</h2>
+                <p>Upload photos, set price, and reach buyers near you</p>
+            </div>
+            <div style="max-width: 700px; margin: 0 auto; background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <form id="uploadForm" onsubmit="handleUpload(event); return false;">
+                    <div class="form-group">
+                        <label>Item Photos (Minimum 3 photos)</label>
+                        <div class="image-preview-grid">
+                            <div class="image-preview-box" id="box1" onclick="document.getElementById('itemImage1').click()">
+                                <i class="fas fa-plus add-icon"></i>
+                                <img id="preview1">
+                                <input type="file" id="itemImage1" accept="image/*" onchange="previewImage(1, event)">
+                            </div>
+                            <div class="image-preview-box" id="box2" onclick="document.getElementById('itemImage2').click()">
+                                <i class="fas fa-plus add-icon"></i>
+                                <img id="preview2">
+                                <input type="file" id="itemImage2" accept="image/*" onchange="previewImage(2, event)">
+                            </div>
+                            <div class="image-preview-box" id="box3" onclick="document.getElementById('itemImage3').click()">
+                                <i class="fas fa-plus add-icon"></i>
+                                <img id="preview3">
+                                <input type="file" id="itemImage3" accept="image/*" onchange="previewImage(3, event)">
+                            </div>
+                        </div>
+                        <p style="color: #888; font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Add up to 3 photos to help buyers see your item clearly</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Item Name</label>
+                        <input type="text" id="itemName" placeholder="What are you selling?" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="itemCategory" required>
+                            <option value="">Select category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Home">Home & Furniture</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Vehicles">Vehicles</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (KES)</label>
+                        <input type="number" id="itemPrice" placeholder="e.g. 2500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location <span style="color: var(--primary);">*</span></label>
+                        <select id="itemLocationSelect" required onchange="if(this.value==='other')document.getElementById('itemLocationCustom').style.display='block';else document.getElementById('itemLocationCustom').style.display='none';">
+                            <option value="">Select location</option>
+                            <option value="Nairobi, CBD">Nairobi, CBD</option>
+                            <option value="Nairobi, Westlands">Nairobi, Westlands</option>
+                            <option value="Nairobi, Eastleigh">Nairobi, Eastleigh</option>
+                            <option value="Mombasa, Nyali">Mombasa, Nyali</option>
+                            <option value="Mombasa, Old Town">Mombasa, Old Town</option>
+                            <option value="Kisumu, Milimani">Kisumu, Milimani</option>
+                            <option value="Kisumu, Kondele">Kisumu, Kondele</option>
+                            <option value="Nakuru, Lanet">Nakuru, Lanet</option>
+                            <option value="Nakuru, CBD">Nakuru, CBD</option>
+                            <option value="Thika, Town Centre">Thika, Town Centre</option>
+                            <option value="Eldoret, CBD">Eldoret, CBD</option>
+                            <option value="other">Other (specify below)</option>
+                        </select>
+                        <input type="text" id="itemLocationCustom" placeholder="Enter your location" style="display:none; margin-top:0.5rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="itemDesc" rows="3" placeholder="Describe your item condition, features, etc."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Item
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TMC SECTION -->
+        <section id="tmc" class="coin-section">
+            <div class="section-header" style="color: white;">
+                <h2><i class="fas fa-coins" style="color: var(--coin);"></i> Taifa Market Coin (TMC)</h2>
+                <p style="color: #bdc3c7;">Market-driven digital currency. Value rises with every buy and sell.</p>
+            </div>
+
+            <div class="coin-value-display">
+                <h3><i class="fas fa-chart-line"></i> Current TMC Value</h3>
+                <div class="coin-value-big">1 TMC = <span id="currentRate">12.50</span> KES</div>
+                <p style="color: #888; margin-top: 0.5rem;">Value updates in real-time based on market activity</p>
+                <div class="coin-stats">
+                    <div class="coin-stat">
+                        <div class="coin-stat-label">Total Transactions</div>
+                        <div class="coin-stat-value" id="totalTransactions">1,247</div>
+                    </div>
+                    <div class="coin-stat">
+                        <div class="coin-stat-label">Active Users</div>
+                        <div class="coin-stat-value" id="activeUsers">856</div>
+                    </div>
+                    <div class="coin-stat">
+                        <div class="coin-stat-label">Items Traded</div>
+                        <div class="coin-stat-value" id="itemsTraded">3,892</div>
+                    </div>
+                    <div class="coin-stat">
+                        <div class="coin-stat-label">24h Change</div>
+                        <div class="coin-stat-value trend-up" id="dailyChange">+2.4%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 2rem 0;">
+                <div style="display: inline-flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.1); padding: 1.5rem 3rem; border-radius: 16px;">
+                    <div>
+                        <div style="color: #888; font-size: 0.9rem;">Your Balance</div>
+                        <div style="font-size: 2.5rem; font-weight: bold; color: var(--coin);"><span id="userTmcBalance">0</span> TMC</div>
+                    </div>
+                    <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.2);"></div>
+                    <div>
+                        <div style="color: #888; font-size: 0.9rem;">Value in KES</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: white;"><span id="userTmcValue">0</span> KES</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exchange-section">
+                <h3 style="text-align: center; margin-bottom: 1rem;"><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC for Money</h3>
+                <p style="text-align: center; color: #666; margin-bottom: 1.5rem;">Convert your earned coins directly to M-Pesa, bank transfer, or cash</p>
+                <div class="exchange-rates">
+                    <div class="rate-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>M-Pesa</h4>
+                        <div class="rate" id="mpesaRate">1 TMC = 12.50 KES</div>
+                        <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">Instant to your phone</p>
+                    </div>
+                    <div class="rate-card">
+                        <i class="fas fa-university"></i>
+                        <h4>Bank Transfer</h4>
+                        <div class="rate" id="bankRate">1 TMC = 12.30 KES</div>
+                        <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">1-2 business days</p>
+                    </div>
+                    <div class="rate-card">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h4>Cash Pickup</h4>
+                        <div class="rate" id="cashRate">1 TMC = 12.00 KES</div>
+                        <p style="font-size: 0.85rem; color: #888; margin-top: 0.3rem;">At any Taifa agent</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-coin" onclick="openModal('exchangeModal')" style="font-size: 1.1rem; padding: 14px 40px;">
+                        <i class="fas fa-hand-holding-usd"></i> Exchange Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="generate-coin-section">
+                <h3><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Generate TMC via M-Pesa</h3>
+                <p style="text-align: center; color: #666; margin-bottom: 1rem;">Buy TMC coins directly using M-Pesa</p>
+                <div class="mpesa-steps">
+                    <div class="mpesa-step">
+                        <div class="step-num">1</div>
+                        <h4>Go to M-Pesa</h4>
+                        <p>Select Lipa na M-Pesa → Paybill</p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="step-num">2</div>
+                        <h4>Enter Paybill</h4>
+                        <p><strong>Business No: 247247</strong></p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="step-num">3</div>
+                        <h4>Account Number</h4>
+                        <p>Your Taifa Number: <strong id="generateTaifaNum">TF-000000</strong></p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="step-num">4</div>
+                        <h4>Enter Amount</h4>
+                        <p>1 KES = 0.08 TMC</p>
+                    </div>
+                </div>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1.5rem; text-align: center;">
+                    <p style="color: #666; margin-bottom: 1rem;">Or enter amount here to see how many TMC you'll get:</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+                        <input type="number" id="generateKesAmount" placeholder="KES amount" style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; width: 200px; font-size: 1rem;" oninput="calculateGeneratedTmc()">
+                        <span style="font-size: 1.5rem; color: #888;">→</span>
+                        <div style="background: linear-gradient(135deg, #d4af37, #f1c40f); color: #2c3e50; padding: 12px 24px; border-radius: 10px; font-weight: bold; font-size: 1.2rem;">
+                            <span id="generatedTmc">0</span> TMC
                         </div>
                     </div>
-                    <input type="file" id="itemImage" accept="image/*" style="display: none;" onchange="previewImage(event)">
                 </div>
-                <div class="form-group">
-                    <label>Item Name</label>
-                    <input type="text" id="itemName" placeholder="What are you selling?" required>
+            </div>
+
+            <div class="coin-features">
+                <div class="coin-feature">
+                    <i class="fas fa-gift"></i>
+                    <h3>Earn Rewards</h3>
+                    <p>Get 2 TMC for every buy or sell transaction.</p>
                 </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="itemCategory" required>
-                        <option value="">Select category</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Home">Home & Furniture</option>
-                        <option value="Gaming">Gaming</option>
-                        <option value="Vehicles">Vehicles</option>
-                        <option value="Other">Other</option>
-                    </select>
+                <div class="coin-feature">
+                    <i class="fas fa-user-plus"></i>
+                    <h3>Registration Bonus</h3>
+                    <p>Get 5 TMC free when you join Taifa Market.</p>
                 </div>
-                <div class="form-group">
-                    <label>Price (KES)</label>
-                    <input type="number" id="itemPrice" placeholder="e.g. 2500" required>
+                <div class="coin-feature">
+                    <i class="fas fa-users"></i>
+                    <h3>Referral Rewards</h3>
+                    <p>Get 2 TMC for every friend you refer.</p>
                 </div>
-                <div class="form-group">
-                    <label>Location</label>
-                    <select id="itemLocationSelect" required onchange="if(this.value==='other')document.getElementById('itemLocationCustom').style.display='block';else document.getElementById('itemLocationCustom').style.display='none';">
-                        <option value="">Select location</option>
-                        <option value="Nairobi, CBD">Nairobi, CBD</option>
-                        <option value="Nairobi, Westlands">Nairobi, Westlands</option>
-                        <option value="Nairobi, Eastleigh">Nairobi, Eastleigh</option>
-                        <option value="Mombasa, Nyali">Mombasa, Nyali</option>
-                        <option value="Mombasa, Old Town">Mombasa, Old Town</option>
-                        <option value="Kisumu, Milimani">Kisumu, Milimani</option>
-                        <option value="Kisumu, Kondele">Kisumu, Kondele</option>
-                        <option value="Nakuru, Lanet">Nakuru, Lanet</option>
-                        <option value="Nakuru, CBD">Nakuru, CBD</option>
-                        <option value="Thika, Town Centre">Thika, Town Centre</option>
-                        <option value="Eldoret, CBD">Eldoret, CBD</option>
-                        <option value="other">Other (specify below)</option>
-                    </select>
-                    <input type="text" id="itemLocationCustom" placeholder="Enter your location" style="display:none; margin-top:0.5rem;">
+                <div class="coin-feature">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Market Driven</h3>
+                    <p>TMC value increases with platform activity.</p>
                 </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="itemDesc" rows="3" placeholder="Describe your item..."></textarea>
+            </div>
+        </section>
+
+        <!-- LOCATIONS SECTION -->
+        <section id="locations" class="locations-section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marked-alt" style="color: var(--primary);"></i> Market Locations</h2>
+                <p>Find items and sellers in your area</p>
+            </div>
+            <div class="locations-grid" id="locationsGrid"></div>
+        </section>
+
+        <!-- FEEDBACK SECTION -->
+        <section id="feedback" class="feedback-section">
+            <div class="section-header">
+                <h2><i class="fas fa-comments" style="color: var(--secondary);"></i> Customer Feedback</h2>
+                <p>Share your experience with Taifa Market</p>
+            </div>
+            <div class="feedback-form">
+                <form onsubmit="submitFeedback(event); return false;">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="feedbackName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div style="display: flex; gap: 0.5rem; font-size: 1.5rem; color: #ddd; cursor: pointer;" id="starRating">
+                            <i class="fas fa-star" onclick="setRating(1)"></i>
+                            <i class="fas fa-star" onclick="setRating(2)"></i>
+                            <i class="fas fa-star" onclick="setRating(3)"></i>
+                            <i class="fas fa-star" onclick="setRating(4)"></i>
+                            <i class="fas fa-star" onclick="setRating(5)"></i>
+                        </div>
+                        <input type="hidden" id="feedbackRating" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Feedback</label>
+                        <textarea id="feedbackText" rows="4" placeholder="Tell us about your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+            <div class="feedback-list" id="feedbackList">
+                <div class="feedback-item">
+                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                    <div class="author">John Kamau</div>
+                    <div class="text">Great platform! Sold my laptop in 2 days and earned TMC coins. The exchange to M-Pesa was instant.</div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Upload Item</button>
-            </form>
+                <div class="feedback-item">
+                    <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                    <div class="author">Sarah Ochieng</div>
+                    <div class="text">Love the location feature. Found a seller right in my neighborhood. Very convenient!</div>
+                </div>
+            </div>
+        </section>
+
+        <footer id="contact">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>About Taifa Market</h3>
+                    <p>Your trusted local marketplace. Buy and sell quality items, connect with trusted sellers, and shop with confidence using Taifa Market Coin.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <p><a onclick="scrollToSection('shop')">Shop</a></p>
+                    <p><a onclick="scrollToSection('sell')">Sell Item</a></p>
+                    <p><a onclick="scrollToSection('tmc')">Taifa Coin</a></p>
+                    <p><a onclick="scrollToSection('locations')">Locations</a></p>
+                    <p><a onclick="scrollToSection('feedback')">Feedback</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Customer Care</h3>
+                    <div class="care-box">
+                        <p><i class="fas fa-phone"></i> <a href="tel:0112698570">0112 698 570</a></p>
+                        <p><i class="fas fa-envelope"></i> <a href="mailto:sngethe332@gmail.com">sngethe332@gmail.com</a></p>
+                        <p><i class="fas fa-clock"></i> Mon - Sat: 8:00 AM - 8:00 PM</p>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Taifa Coin</h3>
+                    <div class="care-box">
+                        <p><i class="fas fa-coins"></i> Earn 2 TMC per transaction</p>
+                        <p><i class="fas fa-user-plus"></i> 5 TMC registration bonus</p>
+                        <p><i class="fas fa-users"></i> 2 TMC per referral</p>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 Taifa Market. Twende Shop Tukafanye Shopping!</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Item Detail Modal -->
+    <div class="modal-overlay" id="itemDetailModal">
+        <div class="modal item-detail-modal">
+            <button class="close-btn" onclick="closeModal('itemDetailModal')">&times;</button>
+            <div id="itemDetailContent"></div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="chatModal">
-        <div class="modal chat-modal">
-            <div class="chat-header">
-                <span><i class="fas fa-user-circle"></i> <span id="chatSellerName">Seller</span></span>
-                <button class="close-btn" style="position: static; color: white;" onclick="closeModal('chatModal')">&times;</button>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>
-            </div>
-            <div class="chat-input">
-                <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="coinModal">
+    <!-- M-Pesa Buy Modal -->
+    <div class="modal-overlay" id="mpesaModal">
         <div class="modal">
-            <button class="close-btn" onclick="closeModal('coinModal')">&times;</button>
-            <h2><i class="fas fa-wallet" style="color: var(--coin);"></i> TMC Wallet</h2>
-            <div style="text-align: center; margin: 1.5rem 0;">
-                <div style="font-size: 3rem; color: var(--coin);"><i class="fas fa-coins"></i></div>
-                <div style="font-size: 2rem; font-weight: bold; color: var(--dark);"><span id="walletBalance">0</span> TMC</div>
-                <p style="color: #888; margin-top: 0.5rem;">Current Value: <span id="walletValue">0</span> KES</p>
-            </div>
-            <div class="form-group">
-                <label>Send TMC to Seller</label>
-                <input type="text" id="sendTo" placeholder="Seller name or phone">
-            </div>
-            <div class="form-group">
-                <label>Amount (TMC)</label>
-                <input type="number" id="sendAmount" placeholder="e.g. 50">
-            </div>
-            <button class="btn btn-coin" style="width: 100%;" onclick="sendCoin()">
-                <i class="fas fa-paper-plane"></i> Send TMC
-            </button>
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
-                <h4 style="margin-bottom: 0.8rem; color: #555;"><i class="fas fa-history"></i> Recent Transactions</h4>
-                <div id="coinHistory" style="max-height: 150px; overflow-y: auto;">
-                    <p style="color: #999; font-size: 0.9rem; text-align: center; padding: 1rem;">No transactions yet.</p>
+            <button class="close-btn" onclick="closeModal('mpesaModal')">&times;</button>
+            <div class="mpesa-prompt">
+                <h3><i class="fas fa-mobile-alt"></i> Pay with M-Pesa</h3>
+                <p>Follow these steps to complete your purchase:</p>
+                <div class="paybill">Paybill: 247247</div>
+                <div class="account">
+                    <div class="account-label">Account Number (Your Taifa No)</div>
+                    <div class="account-number" id="mpesaAccountNum">TF-000000</div>
                 </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Amount to Pay</div>
+                    <div style="font-size: 2rem; font-weight: bold;" id="mpesaAmount">0 KES</div>
+                </div>
+                <p style="font-size: 0.9rem; opacity: 0.9;">After payment, click "I've Paid" below</p>
+                <button class="btn" style="background: white; color: #00a650; width: 100%; margin-top: 1rem; font-weight: bold;" onclick="confirmMpesaPayment()">
+                    <i class="fas fa-check-circle"></i> I've Paid
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Exchange Modal -->
     <div class="modal-overlay" id="exchangeModal">
         <div class="modal">
             <button class="close-btn" onclick="closeModal('exchangeModal')">&times;</button>
@@ -494,8 +743,8 @@
                 <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary);" id="exchangeResult">0 KES</div>
             </div>
             <div class="form-group">
-                <label>Phone Number / Account</label>
-                <input type="text" id="exchangeAccount" placeholder="e.g. 0712345678 or Bank Account">
+                <label>M-Pesa Number / Bank Account / Taifa Agent</label>
+                <input type="text" id="exchangeAccount" placeholder="e.g. 0712345678">
             </div>
             <button class="btn btn-coin" style="width: 100%;" onclick="processExchange()">
                 <i class="fas fa-check-circle"></i> Confirm Exchange
@@ -503,33 +752,28 @@
         </div>
     </div>
 
+    <!-- Chat Modal -->
+    <div class="modal-overlay" id="chatModal">
+        <div class="modal chat-modal">
+            <div class="chat-header">
+                <span><i class="fas fa-user-circle"></i> <span id="chatSellerName">Seller</span></span>
+                <button class="close-btn" style="position: static; color: white;" onclick="closeModal('chatModal')">&times;</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
-        var items = [
-            { id: 1, name: "Samsung Galaxy A54", price: 35000, location: "Nairobi, CBD", category: "Electronics", image: "https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", seller: "John Kamau", comments: [{author:"Alice", text:"Is the battery still good?"},{author:"John", text:"Yes, 95% health!"}] },
-            { id: 2, name: "Nike Air Force 1", price: 4500, location: "Mombasa, Nyali", category: "Fashion", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", seller: "Sarah Ochieng", comments: [{author:"Mike", text:"What size?"}] },
-            { id: 3, name: "HP Laptop 15.6 inch", price: 28000, location: "Kisumu, Milimani", category: "Electronics", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", seller: "Peter Njoroge", comments: [] },
-            { id: 4, name: "Wooden Dining Set", price: 12000, location: "Nakuru, Lanet", category: "Home", image: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", seller: "Mary Wanjiku", comments: [{author:"David", text:"Can you deliver?"},{author:"Mary", text:"Yes, extra 500 KES"}] },
-            { id: 5, name: "Sony PlayStation 5", price: 65000, location: "Nairobi, Westlands", category: "Gaming", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", seller: "James Mwangi", comments: [] },
-            { id: 6, name: "Designer Handbag", price: 3500, location: "Thika, Town Centre", category: "Fashion", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", seller: "Grace Mutua", comments: [{author:"Linda", text:"Original or replica?"}] },
-            { id: 7, name: "Maasai Beaded Necklace", price: 800, location: "Nairobi, Eastleigh", category: "Fashion", image: "https://images.unsplash.com/photo-1606293926075-69a00febf780?w=400&q=80", seller: "Amina Hassan", comments: [] },
-            { id: 8, name: "Kikuyu Traditional Stool", price: 2500, location: "Nairobi, CBD", category: "Home", image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", seller: "Kamau Mwangi", comments: [] }
-        ];
-
-        var locations = [
-            { name: "Nairobi, CBD", items: 234, sellers: 89, top: ["Electronics", "Fashion", "Home"], image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=400&q=80" },
-            { name: "Nairobi, Westlands", items: 156, sellers: 67, top: ["Gaming", "Electronics", "Fashion"], image: "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=400&q=80" },
-            { name: "Nairobi, Eastleigh", items: 312, sellers: 145, top: ["Fashion", "Home", "Electronics"], image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80" },
-            { name: "Mombasa, Nyali", items: 98, sellers: 34, top: ["Fashion", "Home", "Electronics"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80" },
-            { name: "Mombasa, Old Town", items: 76, sellers: 28, top: ["Home", "Fashion", "Other"], image: "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=400&q=80" },
-            { name: "Kisumu, Milimani", items: 45, sellers: 19, top: ["Electronics", "Home", "Fashion"], image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80" },
-            { name: "Kisumu, Kondele", items: 67, sellers: 23, top: ["Fashion", "Electronics", "Home"], image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=400&q=80" },
-            { name: "Nakuru, Lanet", items: 54, sellers: 21, top: ["Home", "Electronics", "Fashion"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80" },
-            { name: "Thika, Town Centre", items: 89, sellers: 31, top: ["Fashion", "Electronics", "Home"], image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&q=80" },
-            { name: "Eldoret, CBD", items: 43, sellers: 16, top: ["Electronics", "Fashion", "Home"], image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=400&q=80" }
-        ];
-
+        // ==================== DATA & STATE ====================
+        var users = JSON.parse(localStorage.getItem('taifaUsers')) || [];
         var currentUser = null;
         var userCoins = 0;
         var coinTransactions = [];
@@ -539,22 +783,207 @@
         var totalTransactions = 1247;
         var activeUsers = 856;
         var itemsTraded = 3892;
+        var currentRating = 5;
+        var uploadedImages = [null, null, null];
+        var itemDetailImages = {};
+        var currentBuyItem = null;
 
-        var currentSlide = 0;
-        var slides = document.querySelectorAll('.bg-slide');
-        setInterval(function() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 5000);
+        var items = [
+            { id: 1, name: "Samsung Galaxy A54", price: 35000, location: "Nairobi, CBD", category: "Electronics", image: "https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", images: ["https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&q=80", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"], seller: "John Kamau", comments: [{author:"Alice", text:"Is the battery still good?"},{author:"John", text:"Yes, 95% health!"}] },
+            { id: 2, name: "Nike Air Force 1", price: 4500, location: "Mombasa, Nyali", category: "Fashion", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", images: ["https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&q=80", "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&q=80"], seller: "Sarah Ochieng", comments: [{author:"Mike", text:"What size?"}] },
+            { id: 3, name: "HP Laptop 15.6 inch", price: 28000, location: "Kisumu, Milimani", category: "Electronics", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", images: ["https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&q=80", "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80"], seller: "Peter Njoroge", comments: [] },
+            { id: 4, name: "Wooden Dining Set", price: 12000, location: "Nakuru, Lanet", category: "Home", image: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", images: ["https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=400&q=80"], seller: "Mary Wanjiku", comments: [{author:"David", text:"Can you deliver?"},{author:"Mary", text:"Yes, extra 500 KES"}] },
+            { id: 5, name: "Sony PlayStation 5", price: 65000, location: "Nairobi, Westlands", category: "Gaming", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", images: ["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&q=80", "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=400&q=80"], seller: "James Mwangi", comments: [] },
+            { id: 6, name: "Designer Handbag", price: 3500, location: "Thika, Town Centre", category: "Fashion", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", images: ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&q=80", "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80"], seller: "Grace Mutua", comments: [{author:"Linda", text:"Original or replica?"}] },
+            { id: 7, name: "Maasai Beaded Necklace", price: 800, location: "Nairobi, Eastleigh", category: "Fashion", image: "https://images.unsplash.com/photo-1606293926075-69a00febf780?w=400&q=80", images: ["https://images.unsplash.com/photo-1606293926075-69a00febf780?w=400&q=80", "https://images.unsplash.com/photo-1515562142738-863d5b802929?w=400&q=80", "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=400&q=80"], seller: "Amina Hassan", comments: [] },
+            { id: 8, name: "Kikuyu Traditional Stool", price: 2500, location: "Nairobi, CBD", category: "Home", image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", images: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=400&q=80"], seller: "Kamau Mwangi", comments: [] }
+        ];
 
+        var locations = [
+            { name: "Nairobi, CBD", items: 234, sellers: 89, top: ["Electronics", "Fashion", "Home"] },
+            { name: "Nairobi, Westlands", items: 156, sellers: 67, top: ["Gaming", "Electronics", "Fashion"] },
+            { name: "Nairobi, Eastleigh", items: 312, sellers: 145, top: ["Fashion", "Home", "Electronics"] },
+            { name: "Mombasa, Nyali", items: 98, sellers: 34, top: ["Fashion", "Home", "Electronics"] },
+            { name: "Mombasa, Old Town", items: 76, sellers: 28, top: ["Home", "Fashion", "Other"] },
+            { name: "Kisumu, Milimani", items: 45, sellers: 19, top: ["Electronics", "Home", "Fashion"] },
+            { name: "Kisumu, Kondele", items: 67, sellers: 23, top: ["Fashion", "Electronics", "Home"] },
+            { name: "Nakuru, Lanet", items: 54, sellers: 21, top: ["Home", "Electronics", "Fashion"] },
+            { name: "Thika, Town Centre", items: 89, sellers: 31, top: ["Fashion", "Electronics", "Home"] },
+            { name: "Eldoret, CBD", items: 43, sellers: 16, top: ["Electronics", "Fashion", "Home"] }
+        ];
+
+        var feedbacks = [
+            { name: "John Kamau", rating: 5, text: "Great platform! Sold my laptop in 2 days and earned TMC coins. The exchange to M-Pesa was instant." },
+            { name: "Sarah Ochieng", rating: 4, text: "Love the location feature. Found a seller right in my neighborhood. Very convenient!" }
+        ];
+
+        // ==================== AUTH FUNCTIONS ====================
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
+            if (tab === 'signin') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('signinForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+            document.getElementById('taifaDisplay').style.display = 'none';
+        }
+
+        function checkPasswordStrength() {
+            var pwd = document.getElementById('regPassword').value;
+            var bar = document.getElementById('strengthBar');
+            bar.className = 'password-strength-bar';
+            if (pwd.length >= 8 && /[0-9]/.test(pwd) && /[^a-zA-Z0-9]/.test(pwd)) {
+                bar.classList.add('strength-strong');
+            } else if (pwd.length >= 6 && (/[0-9]/.test(pwd) || /[^a-zA-Z0-9]/.test(pwd))) {
+                bar.classList.add('strength-medium');
+            } else if (pwd.length > 0) {
+                bar.classList.add('strength-weak');
+            }
+            verifyPasswordMatch();
+        }
+
+        function verifyPasswordMatch() {
+            var pwd = document.getElementById('regPassword').value;
+            var confirm = document.getElementById('regConfirmPassword').value;
+            var badge = document.getElementById('verifyBadge');
+            var btn = document.getElementById('registerBtn');
+            if (pwd && confirm && pwd === confirm && pwd.length >= 8) {
+                badge.style.display = 'inline-flex';
+                btn.disabled = false;
+            } else {
+                badge.style.display = 'none';
+                btn.disabled = true;
+            }
+        }
+
+        function generateTaifaNumber() {
+            return 'TF-' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            var name = document.getElementById('regName').value;
+            var mobile = document.getElementById('regMobile').value;
+            var password = document.getElementById('regPassword').value;
+            var referral = document.getElementById('regReferral').value;
+
+            if (users.find(function(u) { return u.mobile === mobile; })) {
+                showToast('This mobile number is already registered. Please sign in.');
+                return false;
+            }
+
+            var taifaNum = generateTaifaNumber();
+            var newUser = { name: name, mobile: mobile, password: password, taifaNumber: taifaNum, coins: 5, transactions: [] };
+
+            if (referral) {
+                var referrer = users.find(function(u) { return u.taifaNumber === referral; });
+                if (referrer) {
+                    referrer.coins += 2;
+                    referrer.transactions.push({ type: 'referral', amount: 2, desc: 'Referral bonus from ' + name, time: new Date().toLocaleString() });
+                    newUser.coins += 2;
+                    newUser.transactions.push({ type: 'referral', amount: 2, desc: 'Referral bonus from ' + referrer.name, time: new Date().toLocaleString() });
+                    showToast('Referral applied! Both you and referrer get 2 TMC!');
+                }
+            }
+
+            users.push(newUser);
+            localStorage.setItem('taifaUsers', JSON.stringify(users));
+
+            document.getElementById('taifaNumber').textContent = taifaNum;
+            document.getElementById('taifaDisplay').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.querySelectorAll('.auth-tab').forEach(function(t) { t.style.display = 'none'; });
+
+            currentUser = newUser;
+            userCoins = newUser.coins;
+            showToast('Registration successful! Your Taifa Number: ' + taifaNum);
+            return false;
+        }
+
+        function enterApp() {
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('appContainer').classList.add('active');
+            updateUserDisplay();
+            renderItems();
+            renderLocations();
+            updateTMCValue();
+            renderFeedbacks();
+            showToast('Welcome to Taifa Market, ' + currentUser.name + '!');
+        }
+
+        function handleSignIn(e) {
+            e.preventDefault();
+            var mobile = document.getElementById('signinMobile').value;
+            var password = document.getElementById('signinPassword').value;
+            var user = users.find(function(u) { return u.mobile === mobile && u.password === password; });
+
+            if (!user) {
+                showToast('Invalid mobile number or password. Please try again.');
+                return false;
+            }
+
+            currentUser = user;
+            userCoins = user.coins;
+            coinTransactions = user.transactions || [];
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('appContainer').classList.add('active');
+            updateUserDisplay();
+            renderItems();
+            renderLocations();
+            updateTMCValue();
+            renderFeedbacks();
+            showToast('Welcome back, ' + user.name + '!');
+            return false;
+        }
+
+        function logout() {
+            currentUser = null;
+            userCoins = 0;
+            coinTransactions = [];
+            document.getElementById('appContainer').classList.remove('active');
+            document.getElementById('authOverlay').classList.remove('hidden');
+            switchAuthTab('signin');
+            document.querySelectorAll('.auth-tab').forEach(function(t) { t.style.display = 'block'; });
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('taifaDisplay').style.display = 'none';
+            document.getElementById('registerForm').reset();
+            document.getElementById('signinForm').reset();
+            showToast('Logged out successfully.');
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('navUserName').textContent = currentUser.name;
+                document.getElementById('heroUserName').textContent = currentUser.name;
+                document.getElementById('heroTaifaNum').textContent = currentUser.taifaNumber;
+                document.getElementById('navCoinAmount').textContent = userCoins;
+                document.getElementById('userTmcBalance').textContent = userCoins;
+                document.getElementById('userTmcValue').textContent = (userCoins * tmcCurrentRate).toFixed(2);
+                document.getElementById('generateTaifaNum').textContent = currentUser.taifaNumber;
+                document.getElementById('mpesaAccountNum').textContent = currentUser.taifaNumber;
+                document.getElementById('exchangeBalance').textContent = userCoins;
+            }
+        }
+
+        // ==================== NAVIGATION ====================
+        function scrollToSection(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('navLinks').classList.remove('active');
+            }
+        }
+
+        // ==================== SHOP / ITEMS ====================
         function renderItems() {
             var html = '';
             var searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             for(var i = 0; i < items.length; i++) {
                 var item = items[i];
-
                 if (currentCategory !== 'all' && item.category !== currentCategory) continue;
                 if (searchTerm && !item.name.toLowerCase().includes(searchTerm) && !item.location.toLowerCase().includes(searchTerm)) continue;
 
@@ -567,13 +996,13 @@
                     '<div class="item-body">' +
                         '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">' +
                             '<div class="item-title">' + item.name + '</div>' +
-                            '<span class="coin-badge"><i class="fas fa-coins"></i> ' + Math.floor(item.price / tmcCurrentRate) + ' TMC</span>' +
+                            '<span style="background: var(--coin); color: #2c3e50; padding: 0.2rem 0.6rem; border-radius: 10px; font-weight: 700; font-size: 0.75rem;"><i class="fas fa-coins"></i> ' + Math.floor(item.price / tmcCurrentRate) + ' TMC</span>' +
                         '</div>' +
                         '<div class="item-price">KES ' + item.price.toLocaleString() + '</div>' +
                         '<div class="item-location"><i class="fas fa-map-marker-alt"></i> ' + item.location + '</div>' +
                         '<div class="item-actions">' +
-                            '<button class="btn-chat" onclick="openChat('' + item.seller + '')"><i class="fas fa-comment"></i> Chat</button>' +
-                            '<button class="btn-call" onclick="callSeller('' + item.seller + '')"><i class="fas fa-phone"></i> Call</button>' +
+                            '<button class="btn-view" onclick="viewItemDetail(' + item.id + ')"><i class="fas fa-eye"></i> View</button>' +
+                            '<button class="btn-buy" onclick="buyItem(' + item.id + ')"><i class="fas fa-shopping-cart"></i> Buy</button>' +
                         '</div>' +
                         '<div class="comments-box">' +
                             '<h4><i class="fas fa-comments"></i> Comments</h4>' +
@@ -589,26 +1018,148 @@
             document.getElementById('itemsGrid').innerHTML = html || '<p style="text-align:center; color:#888; grid-column:1/-1; padding:3rem;">No items found.</p>';
         }
 
-        function renderLocations() {
-            var html = '';
-            for (var i = 0; i < locations.length; i++) {
-                var loc = locations[i];
-                var tagsHtml = '';
-                for (var j = 0; j < loc.top.length; j++) {
-                    tagsHtml += '<span class="location-item-tag">' + loc.top[j] + '</span>';
-                }
-                html += '<div class="location-card">' +
-                    '<h3><i class="fas fa-map-marker-alt"></i> ' + loc.name + '</h3>' +
-                    '<div class="location-stats">' +
-                        '<span><i class="fas fa-box"></i> ' + loc.items + ' items</span>' +
-                        '<span><i class="fas fa-users"></i> ' + loc.sellers + ' sellers</span>' +
-                    '</div>' +
-                    '<div class="location-items-preview">' + tagsHtml + '</div>' +
-                '</div>';
+        function viewItemDetail(itemId) {
+            var item = items.find(function(i) { return i.id === itemId; });
+            if (!item) return;
+            currentBuyItem = item;
+
+            var html = '<div class="item-detail-images">' +
+                '<img src="' + item.images[0] + '" class="item-detail-main-img" id="detailMainImg">' +
+                '<div class="item-detail-side-images">';
+            for (var i = 0; i < item.images.length; i++) {
+                html += '<img src="' + item.images[i] + '" class="item-detail-side-img ' + (i === 0 ? 'active' : '') + '" onclick="switchDetailImage(' + i + ')" id="sideImg' + i + '">';
             }
-            document.getElementById('locationsGrid').innerHTML = html;
+            html += '</div></div>' +
+                '<div class="item-detail-info">' +
+                    '<h3>' + item.name + '</h3>' +
+                    '<div class="price">KES ' + item.price.toLocaleString() + '</div>' +
+                    '<div class="location"><i class="fas fa-map-marker-alt"></i> ' + item.location + '</div>' +
+                    '<div class="seller"><i class="fas fa-user"></i> Seller: ' + item.seller + '</div>' +
+                    '<div style="display: flex; gap: 1rem; margin-top: 1.5rem;">' +
+                        '<button class="btn btn-buy" style="flex: 1;" onclick="closeModal('itemDetailModal'); buyItem(' + item.id + ');"><i class="fas fa-shopping-cart"></i> Buy Now</button>' +
+                        '<button class="btn btn-chat" style="flex: 1;" onclick="closeModal('itemDetailModal'); openChat('' + item.seller + '');"><i class="fas fa-comment"></i> Chat Seller</button>' +
+                    '</div>' +
+                '</div>';
+
+            document.getElementById('itemDetailContent').innerHTML = html;
+            itemDetailImages = item.images;
+            openModal('itemDetailModal');
         }
 
+        function switchDetailImage(index) {
+            document.getElementById('detailMainImg').src = itemDetailImages[index];
+            document.querySelectorAll('.item-detail-side-img').forEach(function(img) { img.classList.remove('active'); });
+            document.getElementById('sideImg' + index).classList.add('active');
+        }
+
+        function buyItem(itemId) {
+            var item = items.find(function(i) { return i.id === itemId; });
+            if (!item) return;
+            currentBuyItem = item;
+            document.getElementById('mpesaAmount').textContent = item.price.toLocaleString() + ' KES';
+            openModal('mpesaModal');
+        }
+
+        function confirmMpesaPayment() {
+            if (!currentBuyItem || !currentUser) return;
+            closeModal('mpesaModal');
+            userCoins += 2;
+            currentUser.coins = userCoins;
+            currentUser.transactions.push({ type: 'buy', amount: 2, desc: 'Bought ' + currentBuyItem.name, time: new Date().toLocaleString() });
+            totalTransactions++;
+            itemsTraded++;
+            updateUserDisplay();
+            updateTMCValue();
+            localStorage.setItem('taifaUsers', JSON.stringify(users));
+            showToast('Payment confirmed! You earned 2 TMC. Item will be delivered soon.');
+        }
+
+        function filterItems() { renderItems(); }
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-filter button').forEach(function(b) { b.classList.remove('active'); });
+            event.target.classList.add('active');
+            renderItems();
+        }
+
+        // ==================== UPLOAD / SELL ====================
+        function previewImage(index, e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    var img = document.getElementById('preview' + index);
+                    var box = document.getElementById('box' + index);
+                    img.src = ev.target.result;
+                    img.style.display = 'block';
+                    box.classList.add('has-image');
+                    uploadedImages[index - 1] = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleUpload(e) {
+            e.preventDefault();
+            if (!currentUser) {
+                showToast('Please sign in to upload items.');
+                return false;
+            }
+
+            var uploadedCount = uploadedImages.filter(function(img) { return img !== null; }).length;
+            if (uploadedCount < 3) {
+                showToast('Please upload at least 3 photos of your item.');
+                return false;
+            }
+
+            var name = document.getElementById('itemName').value;
+            var price = parseInt(document.getElementById('itemPrice').value);
+            var category = document.getElementById('itemCategory').value;
+            var locSelect = document.getElementById('itemLocationSelect').value;
+            var location = locSelect === 'other' ? document.getElementById('itemLocationCustom').value : locSelect;
+
+            if (!location) {
+                showToast('Please select a location.');
+                return false;
+            }
+
+            var newItem = { 
+                id: Date.now(), 
+                name: name, 
+                price: price, 
+                location: location, 
+                category: category, 
+                image: uploadedImages[0], 
+                images: uploadedImages,
+                seller: currentUser.name, 
+                comments: [] 
+            };
+            items.unshift(newItem);
+            itemsTraded++;
+            totalTransactions++;
+
+            userCoins += 2;
+            currentUser.coins = userCoins;
+            currentUser.transactions.push({ type: 'sell', amount: 2, desc: 'Sold ' + name, time: new Date().toLocaleString() });
+
+            updateUserDisplay();
+            updateTMCValue();
+            renderItems();
+            localStorage.setItem('taifaUsers', JSON.stringify(users));
+
+            showToast('Item uploaded! You earned 2 TMC. TMC value increased!');
+            document.getElementById('uploadForm').reset();
+            uploadedImages = [null, null, null];
+            for (var i = 1; i <= 3; i++) {
+                document.getElementById('preview' + i).style.display = 'none';
+                document.getElementById('box' + i).classList.remove('has-image');
+            }
+            document.getElementById('itemLocationCustom').style.display = 'none';
+            scrollToSection('shop');
+            return false;
+        }
+
+        // ==================== TMC / EXCHANGE ====================
         function updateTMCValue() {
             var activityFactor = (totalTransactions + activeUsers * 2 + itemsTraded) / 10000;
             tmcCurrentRate = tmcBaseRate + (activityFactor * 2.5);
@@ -621,90 +1172,137 @@
             document.getElementById('exchangeRate').textContent = tmcCurrentRate.toFixed(2);
 
             if (currentUser) {
-                document.getElementById('walletValue').textContent = (userCoins * tmcCurrentRate).toFixed(2);
+                document.getElementById('userTmcValue').textContent = (userCoins * tmcCurrentRate).toFixed(2);
             }
         }
 
-        function filterItems() { renderItems(); }
-        function filterCategory(cat) {
-            currentCategory = cat;
-            document.querySelectorAll('.category-filter button').forEach(function(b) { b.classList.remove('active'); });
-            event.target.classList.add('active');
-            renderItems();
+        function calculateGeneratedTmc() {
+            var kes = parseFloat(document.getElementById('generateKesAmount').value) || 0;
+            var tmc = Math.floor(kes / 12.5);
+            document.getElementById('generatedTmc').textContent = tmc;
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        document.querySelectorAll('.modal-overlay').forEach(function(o) {
-            o.addEventListener('click', function(e) { if(e.target === o) o.classList.remove('active'); });
-        });
-
-        function handleRegister(e) {
-            e.preventDefault();
-            var name = document.getElementById('regName').value;
-            currentUser = name;
-            userCoins = 50;
-            activeUsers++;
-            updateCoinDisplay();
-            updateTMCValue();
-            showToast('Welcome, ' + name + '! You received 50 TMC bonus!');
-            closeModal('registerModal');
-            document.getElementById('registerForm').reset();
-            return false;
+        function updateExchangeRate() {
+            var method = document.getElementById('exchangeMethod').value;
+            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
+            document.getElementById('exchangeRate').textContent = rate.toFixed(2);
+            calculateExchange();
         }
 
-        function updateCoinDisplay() {
-            if (currentUser) {
-                document.getElementById('userCoinBalance').style.display = 'flex';
-                document.getElementById('coinAmount').textContent = userCoins;
-                document.getElementById('walletBalance').textContent = userCoins;
-                document.getElementById('exchangeBalance').textContent = userCoins;
-                document.getElementById('walletValue').textContent = (userCoins * tmcCurrentRate).toFixed(2);
+        function calculateExchange() {
+            var amount = parseInt(document.getElementById('exchangeAmount').value) || 0;
+            var method = document.getElementById('exchangeMethod').value;
+            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
+            var result = amount * rate;
+            document.getElementById('exchangeResult').textContent = result.toFixed(2) + ' KES';
+        }
+
+        function processExchange() {
+            if (!currentUser) {
+                showToast('Please sign in to exchange TMC.');
+                return;
             }
-        }
-
-        function previewImage(e) {
-            var file = e.target.files[0];
-            if(file) {
-                var reader = new FileReader();
-                reader.onload = function(ev) {
-                    document.querySelector('.image-preview').innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
-                };
-                reader.readAsDataURL(file);
+            var amount = parseInt(document.getElementById('exchangeAmount').value);
+            var account = document.getElementById('exchangeAccount').value.trim();
+            if (!amount || amount <= 0 || !account) {
+                showToast('Please enter amount and account details.');
+                return;
             }
-        }
+            if (amount > userCoins) {
+                showToast('Insufficient TMC balance.');
+                return;
+            }
+            var method = document.getElementById('exchangeMethod').value;
+            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
+            var kes = amount * rate;
 
-        function handleUpload(e) {
-            e.preventDefault();
-            var name = document.getElementById('itemName').value;
-            var price = parseInt(document.getElementById('itemPrice').value);
-            var category = document.getElementById('itemCategory').value;
-            var locSelect = document.getElementById('itemLocationSelect').value;
-            var location = locSelect === 'other' ? document.getElementById('itemLocationCustom').value : locSelect;
-            var img = document.querySelector('.image-preview img');
-            var image = img ? img.src : 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80';
-
-            items.unshift({ id: Date.now(), name: name, price: price, location: location, category: category, image: image, seller: currentUser || "You", comments: [] });
-            itemsTraded++;
+            userCoins -= amount;
+            currentUser.coins = userCoins;
+            currentUser.transactions.push({ type: 'exchange', amount: amount, desc: 'Exchanged ' + kes.toFixed(2) + ' KES via ' + method.toUpperCase(), time: new Date().toLocaleString() });
             totalTransactions++;
 
-            if (currentUser) {
-                userCoins += 10;
-                updateCoinDisplay();
-                coinTransactions.unshift({ type: 'earn', amount: 10, desc: 'Item upload bonus', time: new Date().toLocaleString() });
-                updateCoinHistory();
-            }
-
+            updateUserDisplay();
             updateTMCValue();
+            localStorage.setItem('taifaUsers', JSON.stringify(users));
+            showToast('Exchanged ' + amount + ' TMC for ' + kes.toFixed(2) + ' KES! Sent to ' + account);
+            closeModal('exchangeModal');
+            document.getElementById('exchangeAmount').value = '';
+            document.getElementById('exchangeAccount').value = '';
+        }
+
+        // ==================== LOCATIONS ====================
+        function renderLocations() {
+            var html = '';
+            for (var i = 0; i < locations.length; i++) {
+                var loc = locations[i];
+                var tagsHtml = '';
+                for (var j = 0; j < loc.top.length; j++) {
+                    tagsHtml += '<span class="location-item-tag">' + loc.top[j] + '</span>';
+                }
+                html += '<div class="location-card" onclick="filterByLocation('' + loc.name + '')">' +
+                    '<h3><i class="fas fa-map-marker-alt"></i> ' + loc.name + '</h3>' +
+                    '<div class="location-stats">' +
+                        '<span><i class="fas fa-box"></i> ' + loc.items + ' items</span>' +
+                        '<span><i class="fas fa-users"></i> ' + loc.sellers + ' sellers</span>' +
+                    '</div>' +
+                    '<div class="location-items-preview">' + tagsHtml + '</div>' +
+                '</div>';
+            }
+            document.getElementById('locationsGrid').innerHTML = html;
+        }
+
+        function filterByLocation(locName) {
+            document.getElementById('searchInput').value = locName;
+            scrollToSection('shop');
             renderItems();
-            showToast('Item uploaded! You earned 10 TMC. TMC value increased!');
-            closeModal('uploadModal');
-            document.getElementById('uploadForm').reset();
-            document.querySelector('.image-preview').innerHTML = '<div class="upload-placeholder"><i class="fas fa-camera" style="font-size: 2.5rem; color: #ccc; margin-bottom: 0.5rem;"></i><p>Click to upload photo</p></div>';
+            showToast('Showing items in ' + locName);
+        }
+
+        // ==================== FEEDBACK ====================
+        function setRating(rating) {
+            currentRating = rating;
+            document.getElementById('feedbackRating').value = rating;
+            var stars = document.querySelectorAll('#starRating i');
+            for (var i = 0; i < stars.length; i++) {
+                stars[i].style.color = i < rating ? 'var(--secondary)' : '#ddd';
+            }
+        }
+
+        function submitFeedback(e) {
+            e.preventDefault();
+            var name = document.getElementById('feedbackName').value;
+            var text = document.getElementById('feedbackText').value;
+            var rating = parseInt(document.getElementById('feedbackRating').value);
+
+            feedbacks.unshift({ name: name, rating: rating, text: text });
+            renderFeedbacks();
+
+            document.getElementById('feedbackName').value = '';
+            document.getElementById('feedbackText').value = '';
+            setRating(5);
+
+            showToast('Thank you for your feedback!');
             return false;
         }
 
+        function renderFeedbacks() {
+            var html = '';
+            for (var i = 0; i < feedbacks.length; i++) {
+                var fb = feedbacks[i];
+                var stars = '';
+                for (var s = 0; s < 5; s++) {
+                    stars += '<i class="fas fa-star" style="color: ' + (s < fb.rating ? 'var(--secondary)' : '#ddd') + ';"></i>';
+                }
+                html += '<div class="feedback-item">' +
+                    '<div class="stars">' + stars + '</div>' +
+                    '<div class="author">' + fb.name + '</div>' +
+                    '<div class="text">' + fb.text + '</div>' +
+                '</div>';
+            }
+            document.getElementById('feedbackList').innerHTML = html;
+        }
+
+        // ==================== CHAT ====================
         function openChat(seller) {
             document.getElementById('chatSellerName').textContent = seller;
             document.getElementById('chatMessages').innerHTML = '<div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>';
@@ -725,103 +1323,24 @@
             }, 1200);
         }
 
-        function callSeller(seller) {
-            window.location.href = 'tel:0112698570';
-            showToast('Calling seller: ' + seller + '...');
-        }
-
         function addComment(itemId) {
             var input = document.getElementById('comment-input-' + itemId);
             var text = input.value.trim();
             if(!text) return;
             var item = items.find(function(i) { return i.id === itemId; });
-            item.comments.push({author: currentUser || "You", text: text});
-            document.getElementById('comments-' + itemId).innerHTML += '<div class="comment"><strong>' + (currentUser || "You") + ':</strong> ' + text + '</div>';
+            item.comments.push({author: currentUser ? currentUser.name : "Guest", text: text});
+            document.getElementById('comments-' + itemId).innerHTML += '<div class="comment"><strong>' + (currentUser ? currentUser.name : "Guest") + ':</strong> ' + text + '</div>';
             input.value = '';
             showToast('Comment posted!');
         }
 
-        function sendCoin() {
-            var to = document.getElementById('sendTo').value.trim();
-            var amount = parseInt(document.getElementById('sendAmount').value);
-            if (!to || !amount || amount <= 0) {
-                showToast('Please enter valid recipient and amount.');
-                return;
-            }
-            if (amount > userCoins) {
-                showToast('Insufficient TMC balance.');
-                return;
-            }
-            userCoins -= amount;
-            totalTransactions++;
-            updateCoinDisplay();
-            updateTMCValue();
-            coinTransactions.unshift({ type: 'send', amount: amount, desc: 'Sent to ' + to, time: new Date().toLocaleString() });
-            updateCoinHistory();
-            showToast('Sent ' + amount + ' TMC to ' + to + '!');
-            document.getElementById('sendTo').value = '';
-            document.getElementById('sendAmount').value = '';
-        }
+        // ==================== MODALS & UTILS ====================
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        function updateCoinHistory() {
-            var html = '';
-            if (coinTransactions.length === 0) {
-                html = '<p style="color: #999; font-size: 0.9rem; text-align: center; padding: 1rem;">No transactions yet.</p>';
-            } else {
-                for (var i = 0; i < coinTransactions.length; i++) {
-                    var tx = coinTransactions[i];
-                    var color = tx.type === 'earn' ? 'var(--accent)' : 'var(--primary)';
-                    var sign = tx.type === 'earn' ? '+' : '-';
-                    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem; border-bottom:1px solid #eee; font-size:0.9rem;">' +
-                        '<div><div style="font-weight:600;">' + tx.desc + '</div><div style="color:#888; font-size:0.8rem;">' + tx.time + '</div></div>' +
-                        '<div style="color:' + color + '; font-weight:700;">' + sign + tx.amount + ' TMC</div>' +
-                    '</div>';
-                }
-            }
-            document.getElementById('coinHistory').innerHTML = html;
-        }
-
-        function updateExchangeRate() {
-            var method = document.getElementById('exchangeMethod').value;
-            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
-            document.getElementById('exchangeRate').textContent = rate.toFixed(2);
-            calculateExchange();
-        }
-
-        function calculateExchange() {
-            var amount = parseInt(document.getElementById('exchangeAmount').value) || 0;
-            var method = document.getElementById('exchangeMethod').value;
-            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
-            var result = amount * rate;
-            document.getElementById('exchangeResult').textContent = result.toFixed(2) + ' KES';
-        }
-
-        function processExchange() {
-            var amount = parseInt(document.getElementById('exchangeAmount').value);
-            var account = document.getElementById('exchangeAccount').value.trim();
-            if (!amount || amount <= 0 || !account) {
-                showToast('Please enter amount and account details.');
-                return;
-            }
-            if (amount > userCoins) {
-                showToast('Insufficient TMC balance.');
-                return;
-            }
-            var method = document.getElementById('exchangeMethod').value;
-            var rate = method === 'mpesa' ? tmcCurrentRate : method === 'bank' ? tmcCurrentRate * 0.98 : tmcCurrentRate * 0.96;
-            var kes = amount * rate;
-
-            userCoins -= amount;
-            totalTransactions++;
-            updateCoinDisplay();
-            updateTMCValue();
-            coinTransactions.unshift({ type: 'exchange', amount: amount, desc: 'Exchanged ' + kes.toFixed(2) + ' KES via ' + method.toUpperCase(), time: new Date().toLocaleString() });
-            updateCoinHistory();
-            showToast('Exchanged ' + amount + ' TMC for ' + kes.toFixed(2) + ' KES!');
-            closeModal('exchangeModal');
-            document.getElementById('exchangeAmount').value = '';
-            document.getElementById('exchangeAccount').value = '';
-        }
+        document.querySelectorAll('.modal-overlay').forEach(function(o) {
+            o.addEventListener('click', function(e) { if(e.target === o) o.classList.remove('active'); });
+        });
 
         function showToast(msg) {
             var t = document.getElementById('toast');
@@ -832,9 +1351,18 @@
 
         function toggleMobileMenu() { document.getElementById('navLinks').classList.toggle('active'); }
 
-        renderItems();
-        renderLocations();
-        updateTMCValue();
+        // Hero slideshow
+        var currentSlide = 0;
+        var slides = document.querySelectorAll('.bg-slide');
+        setInterval(function() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+
+        // Initialize
+        setRating(5);
+        renderFeedbacks();
     </script>
 </body>
 </html>
