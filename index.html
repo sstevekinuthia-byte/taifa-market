@@ -1,822 +1,596 @@
 
-part3 = '''
-    // ==================== DATA & STATE ====================
-    var users = JSON.parse(localStorage.getItem('taifaUsers')) || [];
-    var currentUser = null;
-    var userCoins = 0;
-    var coinTransactions = [];
-    var currentCategory = 'all';
-    var currentRating = 5;
-    var uploadedImages = [null, null, null];
-    var currentDetailItem = null;
-    var currentUnlockItem = null;
-    var totalUnlocks = parseInt(localStorage.getItem('taifaTotalUnlocks')) || 0;
-    var tmcBaseRate = 10.00;
-    
-    var items = JSON.parse(localStorage.getItem('taifaItems')) || [
-        { id: 1, name: "Samsung Galaxy A54", price: 35000, location: "Nairobi, CBD", category: "Electronics", image: "https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", images: ["https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&q=80", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80"], seller: "John Kamau", sellerTaifa: "TF-100001", sellerPhone: "0712345678", sellerEmail: "john@email.com", comments: [{author:"Alice", text:"Is the battery still good?"},{author:"John", text:"Yes, 95% health!"}], unlocks: [] },
-        { id: 2, name: "Nike Air Force 1", price: 4500, location: "Mombasa, Nyali", category: "Fashion", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", images: ["https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&q=80", "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&q=80"], seller: "Sarah Ochieng", sellerTaifa: "TF-100002", sellerPhone: "0723456789", sellerEmail: "sarah@email.com", comments: [{author:"Mike", text:"What size?"}], unlocks: [] },
-        { id: 3, name: "HP Laptop 15.6 inch", price: 28000, location: "Kisumu, Milimani", category: "Electronics", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", images: ["https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&q=80", "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80"], seller: "Peter Njoroge", sellerTaifa: "TF-100003", sellerPhone: "0734567890", sellerEmail: "peter@email.com", comments: [], unlocks: [] },
-        { id: 4, name: "Wooden Dining Set", price: 12000, location: "Nakuru, Lanet", category: "Home", image: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", images: ["https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=400&q=80"], seller: "Mary Wanjiku", sellerTaifa: "TF-100004", sellerPhone: "0745678901", sellerEmail: "mary@email.com", comments: [{author:"David", text:"Can you deliver?"},{author:"Mary", text:"Yes, extra 500 KES"}], unlocks: [] },
-        { id: 5, name: "Sony PlayStation 5", price: 65000, location: "Nairobi, Westlands", category: "Gaming", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", images: ["https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&q=80", "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=400&q=80"], seller: "James Mwangi", sellerTaifa: "TF-100005", sellerPhone: "0756789012", sellerEmail: "james@email.com", comments: [], unlocks: [] },
-        { id: 6, name: "Designer Handbag", price: 3500, location: "Thika, Town Centre", category: "Fashion", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", images: ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&q=80", "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&q=80"], seller: "Grace Mutua", sellerTaifa: "TF-100006", sellerPhone: "0767890123", sellerEmail: "grace@email.com", comments: [{author:"Linda", text:"Original or replica?"}], unlocks: [] },
-        { id: 7, name: "Maasai Beaded Necklace", price: 800, location: "Nairobi, Eastleigh", category: "Fashion", image: "https://images.unsplash.com/photo-1606293926075-69a00febf780?w=400&q=80", images: ["https://images.unsplash.com/photo-1606293926075-69a00febf780?w=400&q=80", "https://images.unsplash.com/photo-1515562142738-863d5b802929?w=400&q=80", "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=400&q=80"], seller: "Amina Hassan", sellerTaifa: "TF-100007", sellerPhone: "0778901234", sellerEmail: "amina@email.com", comments: [], unlocks: [] },
-        { id: 8, name: "Kikuyu Traditional Stool", price: 2500, location: "Nairobi, CBD", category: "Home", image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", images: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80", "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=400&q=80"], seller: "Kamau Mwangi", sellerTaifa: "TF-100008", sellerPhone: "0789012345", sellerEmail: "kamau@email.com", comments: [], unlocks: [] }
-    ];
-    
-    var locations = [
-        { name: "Nairobi, CBD", items: 234, sellers: 89, top: ["Electronics", "Fashion", "Home"] },
-        { name: "Nairobi, Westlands", items: 156, sellers: 67, top: ["Gaming", "Electronics", "Fashion"] },
-        { name: "Nairobi, Eastleigh", items: 312, sellers: 145, top: ["Fashion", "Home", "Electronics"] },
-        { name: "Mombasa, Nyali", items: 98, sellers: 34, top: ["Fashion", "Home", "Electronics"] },
-        { name: "Mombasa, Old Town", items: 76, sellers: 28, top: ["Home", "Fashion", "Other"] },
-        { name: "Kisumu, Milimani", items: 45, sellers: 19, top: ["Electronics", "Home", "Fashion"] },
-        { name: "Kisumu, Kondele", items: 67, sellers: 23, top: ["Fashion", "Electronics", "Home"] },
-        { name: "Nakuru, Lanet", items: 54, sellers: 21, top: ["Home", "Electronics", "Fashion"] },
-        { name: "Thika, Town Centre", items: 89, sellers: 31, top: ["Fashion", "Electronics", "Home"] },
-        { name: "Eldoret, CBD", items: 43, sellers: 16, top: ["Electronics", "Fashion", "Home"] }
-    ];
-    
-    var feedbacks = JSON.parse(localStorage.getItem('taifaFeedbacks')) || [
-        { name: "John Kamau", rating: 5, text: "Great platform! Sold my laptop in 2 days and earned TMC coins." },
-        { name: "Sarah Ochieng", rating: 4, text: "Love the location feature. Found a seller right in my neighborhood." }
-    ];
+part2 = '''
+    <!-- LANDING PAGE -->
+    <div class="landing-page" id="landingPage">
+        <div class="landing-bg" id="landingBg">
+            <div class="landing-bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=1920&q=80');"></div>
+            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1920&q=80');"></div>
+            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1920&q=80');"></div>
+            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80');"></div>
+            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1606293926075-69a00febf780?w=1920&q=80');"></div>
+        </div>
+        <div class="landing-content">
+            <h1><i class="fas fa-store"></i> Taifa Market</h1>
+            <p class="landing-motto">"Twende Tukafanye Shopping"</p>
+            <div class="landing-buttons">
+                <button class="btn btn-secondary" onclick="showAuthModal('signin')">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <button class="btn btn-primary" onclick="showAuthModal('register')">
+                    <i class="fas fa-user-plus"></i> Join / Register
+                </button>
+            </div>
+        </div>
+    </div>
 
-    // ==================== LANDING PAGE SLIDESHOW ====================
-    var landingSlide = 0;
-    var landingSlides = document.querySelectorAll('.landing-bg-slide');
-    setInterval(function() {
-        landingSlides[landingSlide].classList.remove('active');
-        landingSlide = (landingSlide + 1) % landingSlides.length;
-        landingSlides[landingSlide].classList.add('active');
-    }, 5000);
+    <!-- AUTH MODAL -->
+    <div class="modal-overlay" id="authModal">
+        <div class="auth-modal">
+            <button class="close-btn" onclick="closeAuthModal()">&times;</button>
+            <h2 id="authTitle"><i class="fas fa-store"></i> Taifa Market</h2>
+            <div class="auth-tabs" id="authTabs">
+                <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Join / Register</button>
+            </div>
+            <div class="auth-form active" id="signinForm">
+                <form onsubmit="handleSignIn(event); return false;">
+                    <div class="form-group">
+                        <label><i class="fas fa-mobile-alt"></i> Mobile Number</label>
+                        <input type="tel" id="signinMobile" placeholder="e.g. 0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="signinPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
+                <p style="text-align: center; margin-top: 1.5rem; color: #888;">
+                    New here? <a href="#" onclick="switchAuthTab('register')" style="color: var(--primary); font-weight: 600;">Join now</a>
+                </p>
+            </div>
+            <div class="auth-form" id="registerForm">
+                <form onsubmit="handleRegister(event); return false;">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="regName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-mobile-alt"></i> Mobile Number</label>
+                        <input type="tel" id="regMobile" placeholder="e.g. 0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="regPassword" placeholder="Min 8 chars, 1 number, 1 symbol" required oninput="checkPasswordStrength()">
+                        <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 0.3rem;">Must be 8+ characters with at least 1 number and 1 symbol</p>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-check-circle"></i> Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="Re-enter your password" required oninput="verifyPasswordMatch()">
+                        <div class="verify-badge" id="verifyBadge"><i class="fas fa-check-circle"></i> Passwords match</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-gift"></i> Referral Code (Optional)</label>
+                        <input type="text" id="regReferral" placeholder="Enter referrer's Taifa Number">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="registerBtn" disabled>
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+            </div>
+            <div class="taifa-card" id="taifaCard" style="display:none;">
+                <h3><i class="fas fa-id-card"></i> Your Taifa Number</h3>
+                <div class="taifa-number" id="taifaNumberDisplay">TF-000000</div>
+                <p>Save this! Use it for TMC exchanges and referrals</p>
+                <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.1); border-radius: 10px;">
+                    <div style="font-size: 0.9rem;">You received: <strong>5 TMC</strong> registration bonus!</div>
+                    <div id="referralBonus" style="font-size: 0.9rem; display: none;">+ <strong>2 TMC</strong> referral bonus!</div>
+                </div>
+                <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="enterApp()">
+                    <i class="fas fa-arrow-right"></i> Enter Taifa Market
+                </button>
+            </div>
+        </div>
+    </div>
 
-    // ==================== APP HERO SLIDESHOW ====================
-    var appSlide = 0;
-    var appSlides = document.querySelectorAll('.app-bg-slide');
-    setInterval(function() {
-        appSlides[appSlide].classList.remove('active');
-        appSlide = (appSlide + 1) % appSlides.length;
-        appSlides[appSlide].classList.add('active');
-    }, 5000);
+    <!-- MAIN APP -->
+    <div class="app-container" id="appContainer">
+        <nav>
+            <div class="nav-logo" onclick="scrollToSection('appHero')">
+                <i class="fas fa-store"></i> Taifa Market
+            </div>
+            <div class="nav-links" id="navLinks">
+                <a class="nav-link" onclick="scrollToSection('shopSection')">Shop</a>
+                <a class="nav-link" onclick="scrollToSection('tmcSection')">TMC</a>
+                <a class="nav-link" onclick="scrollToSection('sellSection')">Sell/Upload</a>
+                <a class="nav-link" onclick="scrollToSection('locationsSection')">Locations</a>
+                <a class="nav-link" onclick="scrollToSection('feedbackSection')">Feedback</a>
+                <div class="nav-user-info">
+                    <div class="nav-coin"><i class="fas fa-coins"></i> <span id="navCoinBalance">0</span> TMC</div>
+                    <span id="navUserName">User</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
 
-    // ==================== AUTH FUNCTIONS ====================
-    function showAuthModal(tab) {
-        document.getElementById('authModal').classList.add('active');
-        switchAuthTab(tab);
-        document.getElementById('taifaCard').style.display = 'none';
-        document.getElementById('authTabs').style.display = 'flex';
-        document.getElementById('signinForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'block';
-    }
+        <section class="app-hero" id="appHero">
+            <div class="app-bg-slideshow" id="appBg">
+                <div class="app-bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&q=80');"></div>
+                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=80');"></div>
+                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80');"></div>
+                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1920&q=80');"></div>
+            </div>
+            <div class="app-hero-content">
+                <div class="welcome">Welcome back, <span id="heroUserName">User</span>!</div>
+                <h1><i class="fas fa-store"></i> Taifa Market</h1>
+                <div class="taifa-display">
+                    <i class="fas fa-id-card"></i> Taifa Number: <span id="heroTaifaNumber">TF-000000</span>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="scrollToSection('shopSection')">
+                        <i class="fas fa-shopping-bag"></i> Start Shopping
+                    </button>
+                    <button class="btn btn-coin" onclick="scrollToSection('tmcSection')">
+                        <i class="fas fa-coins"></i> My TMC
+                    </button>
+                    <button class="btn btn-success" onclick="scrollToSection('sellSection')">
+                        <i class="fas fa-cloud-upload-alt"></i> Sell Item
+                    </button>
+                </div>
+            </div>
+        </section>
 
-    function closeAuthModal() {
-        document.getElementById('authModal').classList.remove('active');
-    }
+        <section class="section" id="shopSection">
+            <div class="section-header">
+                <h2><i class="fas fa-shopping-bag" style="color: var(--primary);"></i> Shop</h2>
+                <p>Browse items for sale across all locations</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search items, brands, locations..." onkeyup="filterItems()">
+                <button onclick="filterItems()"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="category-filter" id="categoryFilter">
+                <button class="active" onclick="filterCategory('all')">All</button>
+                <button onclick="filterCategory('Electronics')">Electronics</button>
+                <button onclick="filterCategory('Fashion')">Fashion</button>
+                <button onclick="filterCategory('Home')">Home</button>
+                <button onclick="filterCategory('Gaming')">Gaming</button>
+            </div>
+            <div class="items-grid" id="itemsGrid"></div>
+        </section>
 
-    function switchAuthTab(tab) {
-        document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
-        document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
-        if (tab === 'signin') {
-            document.querySelectorAll('.auth-tab')[0].classList.add('active');
-            document.getElementById('signinForm').classList.add('active');
-            document.getElementById('authTitle').innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Taifa Market';
-        } else {
-            document.querySelectorAll('.auth-tab')[1].classList.add('active');
-            document.getElementById('registerForm').classList.add('active');
-            document.getElementById('authTitle').innerHTML = '<i class="fas fa-user-plus"></i> Join Taifa Market';
-        }
-        document.getElementById('taifaCard').style.display = 'none';
-    }
+        <section class="section" id="sellSection">
+            <div class="section-header">
+                <h2><i class="fas fa-cloud-upload-alt" style="color: var(--accent);"></i> Sell Your Item</h2>
+                <p>Upload photos, set price, and reach buyers near you</p>
+            </div>
+            <div class="upload-container">
+                <form id="uploadForm" onsubmit="handleUpload(event); return false;">
+                    <div class="form-group">
+                        <label><i class="fas fa-images"></i> Item Photos (Minimum 3 required)</label>
+                        <div class="image-upload-grid">
+                            <div class="upload-box" id="uploadBox1" onclick="document.getElementById('fileInput1').click()">
+                                <i class="fas fa-plus upload-icon"></i>
+                                <img id="previewImg1">
+                                <input type="file" id="fileInput1" accept="image/*" onchange="previewUpload(1, event)">
+                            </div>
+                            <div class="upload-box" id="uploadBox2" onclick="document.getElementById('fileInput2').click()">
+                                <i class="fas fa-plus upload-icon"></i>
+                                <img id="previewImg2">
+                                <input type="file" id="fileInput2" accept="image/*" onchange="previewUpload(2, event)">
+                            </div>
+                            <div class="upload-box" id="uploadBox3" onclick="document.getElementById('fileInput3').click()">
+                                <i class="fas fa-plus upload-icon"></i>
+                                <img id="previewImg3">
+                                <input type="file" id="fileInput3" accept="image/*" onchange="previewUpload(3, event)">
+                            </div>
+                        </div>
+                        <div class="upload-hint"><i class="fas fa-info-circle"></i> Click boxes to upload. All 3 photos are required.</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> Item Name</label>
+                        <input type="text" id="uploadName" placeholder="What are you selling?" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-list"></i> Category</label>
+                        <select id="uploadCategory" required>
+                            <option value="">Select category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Home">Home & Furniture</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Vehicles">Vehicles</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Price (KES)</label>
+                        <input type="number" id="uploadPrice" placeholder="e.g. 2500" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Location <span style="color: var(--primary);">*</span></label>
+                        <select id="uploadLocation" required onchange="handleLocationChange()">
+                            <option value="">Select location</option>
+                            <option value="Nairobi, CBD">Nairobi, CBD</option>
+                            <option value="Nairobi, Westlands">Nairobi, Westlands</option>
+                            <option value="Nairobi, Eastleigh">Nairobi, Eastleigh</option>
+                            <option value="Mombasa, Nyali">Mombasa, Nyali</option>
+                            <option value="Mombasa, Old Town">Mombasa, Old Town</option>
+                            <option value="Kisumu, Milimani">Kisumu, Milimani</option>
+                            <option value="Kisumu, Kondele">Kisumu, Kondele</option>
+                            <option value="Nakuru, Lanet">Nakuru, Lanet</option>
+                            <option value="Nakuru, CBD">Nakuru, CBD</option>
+                            <option value="Thika, Town Centre">Thika, Town Centre</option>
+                            <option value="Eldoret, CBD">Eldoret, CBD</option>
+                            <option value="other">Other (specify below)</option>
+                        </select>
+                        <input type="text" id="uploadLocationCustom" placeholder="Enter your location" style="display:none; margin-top:0.8rem;">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="uploadDesc" rows="3" placeholder="Describe your item condition, features, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Your Phone Number (Hidden from public)</label>
+                        <input type="tel" id="uploadPhone" placeholder="e.g. 0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Your Email (Hidden from public)</label>
+                        <input type="email" id="uploadEmail" placeholder="your@email.com" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Item
+                    </button>
+                </form>
+            </div>
+        </section>
 
-    function checkPasswordStrength() {
-        var pwd = document.getElementById('regPassword').value;
-        var bar = document.getElementById('strengthBar');
-        bar.className = 'password-strength-bar';
-        if (pwd.length >= 8 && /[0-9]/.test(pwd) && /[^a-zA-Z0-9]/.test(pwd)) {
-            bar.classList.add('strength-strong');
-        } else if (pwd.length >= 6 && (/[0-9]/.test(pwd) || /[^a-zA-Z0-9]/.test(pwd))) {
-            bar.classList.add('strength-medium');
-        } else if (pwd.length > 0) {
-            bar.classList.add('strength-weak');
-        }
-        verifyPasswordMatch();
-    }
+        <section class="tmc-section" id="tmcSection">
+            <div class="section-header" style="color: white;">
+                <h2><i class="fas fa-coins" style="color: var(--coin);"></i> Taifa Market Coin (TMC)</h2>
+                <p style="color: #bdc3c7;">Market-driven digital currency. Value rises with every contact unlock.</p>
+            </div>
+            <div class="tmc-value-card">
+                <h3><i class="fas fa-chart-line"></i> Current TMC Value</h3>
+                <div class="tmc-value-big">1 TMC = <span id="currentTmcRate">10.00</span> KES</div>
+                <p>Value updates in real-time based on market activity</p>
+                <div class="tmc-stats">
+                    <div class="tmc-stat">
+                        <div class="tmc-stat-label">Total Unlocks</div>
+                        <div class="tmc-stat-value" id="totalUnlocks">0</div>
+                    </div>
+                    <div class="tmc-stat">
+                        <div class="tmc-stat-label">Active Users</div>
+                        <div class="tmc-stat-value" id="activeUsersCount">0</div>
+                    </div>
+                    <div class="tmc-stat">
+                        <div class="tmc-stat-label">Items Listed</div>
+                        <div class="tmc-stat-value" id="itemsListedCount">0</div>
+                    </div>
+                    <div class="tmc-stat">
+                        <div class="tmc-stat-label">24h Change</div>
+                        <div class="tmc-stat-value" id="dailyChange">+0.0%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tmc-balance-display">
+                <div class="tmc-balance-box">
+                    <div class="label">Your Balance</div>
+                    <div class="value"><span id="userTmcBalance">0</span> TMC</div>
+                    <div class="sub">Earn more by selling and unlocking contacts</div>
+                </div>
+                <div class="tmc-balance-box">
+                    <div class="label">Value in KES</div>
+                    <div class="value" style="color: white;"><span id="userTmcKesValue">0</span> KES</div>
+                    <div class="sub">Based on current TMC rate</div>
+                </div>
+            </div>
+            <div class="exchange-card">
+                <h3><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC for Money</h3>
+                <p>Convert your earned coins directly to M-Pesa, bank transfer, or cash</p>
+                <div class="exchange-options">
+                    <div class="exchange-option">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>M-Pesa</h4>
+                        <div class="rate" id="mpesaRate">1 TMC = 10.00 KES</div>
+                        <p>Instant to your phone</p>
+                    </div>
+                    <div class="exchange-option">
+                        <i class="fas fa-university"></i>
+                        <h4>Bank Transfer</h4>
+                        <div class="rate" id="bankRate">1 TMC = 9.80 KES</div>
+                        <p>1-2 business days</p>
+                    </div>
+                    <div class="exchange-option">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h4>Cash Pickup</h4>
+                        <div class="rate" id="cashRate">1 TMC = 9.60 KES</div>
+                        <p>At any Taifa agent</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-coin" onclick="openModal('exchangeModal')">
+                        <i class="fas fa-hand-holding-usd"></i> Exchange Now
+                    </button>
+                </div>
+            </div>
+            <div class="generate-section">
+                <h3><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Generate TMC via M-Pesa</h3>
+                <p>Buy TMC coins directly using M-Pesa</p>
+                <div class="mpesa-steps">
+                    <div class="mpesa-step">
+                        <div class="mpesa-step-num">1</div>
+                        <h4>Go to M-Pesa</h4>
+                        <p>Select Lipa na M-Pesa → Paybill</p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="mpesa-step-num">2</div>
+                        <h4>Enter Paybill</h4>
+                        <p><strong>Business No: 247247</strong></p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="mpesa-step-num">3</div>
+                        <h4>Account Number</h4>
+                        <p>Your Taifa Number:<br><strong id="generateTaifaNum">TF-000000</strong></p>
+                    </div>
+                    <div class="mpesa-step">
+                        <div class="mpesa-step-num">4</div>
+                        <h4>Enter Amount</h4>
+                        <p>1 KES = 0.08 TMC</p>
+                    </div>
+                </div>
+                <div class="generate-calc">
+                    <p>Enter amount to see how many TMC you'll get:</p>
+                    <div class="generate-calc-row">
+                        <input type="number" id="generateKesInput" placeholder="KES amount" oninput="calculateGeneratedTmc()">
+                        <span class="arrow">→</span>
+                        <div class="generate-result"><span id="generatedTmc">0</span> TMC</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tmc-rewards">
+                <div class="tmc-reward">
+                    <i class="fas fa-gift"></i>
+                    <h4>Earn Rewards</h4>
+                    <p>Get 2 TMC for every contact unlock</p>
+                </div>
+                <div class="tmc-reward">
+                    <i class="fas fa-user-plus"></i>
+                    <h4>Registration Bonus</h4>
+                    <p>Get 5 TMC free when you join</p>
+                </div>
+                <div class="tmc-reward">
+                    <i class="fas fa-users"></i>
+                    <h4>Referral Rewards</h4>
+                    <p>Get 2 TMC for every friend you refer</p>
+                </div>
+                <div class="tmc-reward">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Market Driven</h4>
+                    <p>TMC value increases with unlocks</p>
+                </div>
+            </div>
+        </section>
 
-    function verifyPasswordMatch() {
-        var pwd = document.getElementById('regPassword').value;
-        var confirm = document.getElementById('regConfirmPassword').value;
-        var badge = document.getElementById('verifyBadge');
-        var btn = document.getElementById('registerBtn');
-        if (pwd && confirm && pwd === confirm && pwd.length >= 8 && /[0-9]/.test(pwd) && /[^a-zA-Z0-9]/.test(pwd)) {
-            badge.classList.add('show');
-            btn.disabled = false;
-        } else {
-            badge.classList.remove('show');
-            btn.disabled = true;
-        }
-    }
+        <section class="section" id="locationsSection">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marked-alt" style="color: var(--primary);"></i> Market Locations</h2>
+                <p>Find items and sellers in your area</p>
+            </div>
+            <div class="locations-grid" id="locationsGrid"></div>
+        </section>
 
-    function generateTaifaNumber() {
-        var num = Math.floor(100000 + Math.random() * 900000);
-        return 'TF-' + num;
-    }
+        <section class="section" id="feedbackSection">
+            <div class="section-header">
+                <h2><i class="fas fa-comments" style="color: var(--secondary);"></i> Customer Feedback</h2>
+                <p>Share your experience with Taifa Market</p>
+            </div>
+            <div class="feedback-form-container">
+                <form onsubmit="submitFeedback(event); return false;">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Your Name</label>
+                        <input type="text" id="feedbackName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-star"></i> Rating</label>
+                        <div class="star-rating" id="starRating">
+                            <i class="fas fa-star" onclick="setRating(1)"></i>
+                            <i class="fas fa-star" onclick="setRating(2)"></i>
+                            <i class="fas fa-star" onclick="setRating(3)"></i>
+                            <i class="fas fa-star" onclick="setRating(4)"></i>
+                            <i class="fas fa-star" onclick="setRating(5)"></i>
+                        </div>
+                        <input type="hidden" id="feedbackRating" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-comment"></i> Your Feedback</label>
+                        <textarea id="feedbackText" rows="4" placeholder="Tell us about your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+            <div class="feedback-list" id="feedbackList"></div>
+        </section>
 
-    function handleRegister(e) {
-        e.preventDefault();
-        var name = document.getElementById('regName').value;
-        var mobile = document.getElementById('regMobile').value;
-        var password = document.getElementById('regPassword').value;
-        var referral = document.getElementById('regReferral').value;
-        
-        if (users.find(function(u) { return u.mobile === mobile; })) {
-            showToast('This mobile number is already registered. Please Sign In.', 'error');
-            return false;
-        }
-        
-        var taifaNum = generateTaifaNumber();
-        var newUser = { 
-            name: name, 
-            mobile: mobile, 
-            password: password, 
-            taifaNumber: taifaNum, 
-            coins: 5, 
-            transactions: [{type: 'register', amount: 5, desc: 'Registration bonus', time: new Date().toLocaleString()}],
-            createdAt: new Date().toLocaleString()
-        };
-        
-        if (referral) {
-            var referrer = users.find(function(u) { return u.taifaNumber === referral; });
-            if (referrer) {
-                referrer.coins += 2;
-                referrer.transactions.push({ type: 'referral', amount: 2, desc: 'Referral bonus from ' + name, time: new Date().toLocaleString() });
-                newUser.coins += 2;
-                newUser.transactions.push({ type: 'referral', amount: 2, desc: 'Referral bonus from ' + referrer.name, time: new Date().toLocaleString() });
-                document.getElementById('referralBonus').style.display = 'block';
-                showToast('Referral applied! Both you and ' + referrer.name + ' get 2 TMC!', 'success');
-            }
-        }
-        
-        users.push(newUser);
-        localStorage.setItem('taifaUsers', JSON.stringify(users));
-        
-        document.getElementById('taifaNumberDisplay').textContent = taifaNum;
-        document.getElementById('taifaCard').style.display = 'block';
-        document.getElementById('authTabs').style.display = 'none';
-        document.getElementById('signinForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'none';
-        
-        currentUser = newUser;
-        userCoins = newUser.coins;
-        
-        showToast('Registration successful! Your Taifa Number: ' + taifaNum, 'success');
-        return false;
-    }
+        <footer id="contactSection">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3><i class="fas fa-store"></i> About Taifa Market</h3>
+                    <p>Your trusted local marketplace. Buy and sell quality items, connect with trusted sellers, and shop with confidence using Taifa Market Coin.</p>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-link"></i> Quick Links</h3>
+                    <a onclick="scrollToSection('shopSection')"><i class="fas fa-shopping-bag"></i> Shop</a>
+                    <a onclick="scrollToSection('sellSection')"><i class="fas fa-cloud-upload-alt"></i> Sell Item</a>
+                    <a onclick="scrollToSection('tmcSection')"><i class="fas fa-coins"></i> Taifa Coin</a>
+                    <a onclick="scrollToSection('locationsSection')"><i class="fas fa-map-marked-alt"></i> Locations</a>
+                    <a onclick="scrollToSection('feedbackSection')"><i class="fas fa-comments"></i> Feedback</a>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-headset"></i> Customer Care</h3>
+                    <div class="care-box">
+                        <p><i class="fas fa-phone"></i> <a href="tel:0112698570">0112 698 570</a></p>
+                        <p><i class="fas fa-envelope"></i> <a href="mailto:sngethe332@gmail.com">sngethe332@gmail.com</a></p>
+                        <p><i class="fas fa-clock"></i> Mon - Sat: 8:00 AM - 8:00 PM</p>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3><i class="fas fa-coins"></i> Taifa Coin</h3>
+                    <div class="care-box">
+                        <p><i class="fas fa-gift"></i> Earn 2 TMC per unlock</p>
+                        <p><i class="fas fa-user-plus"></i> 5 TMC registration bonus</p>
+                        <p><i class="fas fa-users"></i> 2 TMC per referral</p>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 Taifa Market. Twende Tukafanye Shopping!</p>
+            </div>
+        </footer>
+    </div>
 
-    function enterApp() {
-        closeAuthModal();
-        document.getElementById('landingPage').classList.add('hidden');
-        document.getElementById('appContainer').classList.add('active');
-        updateUserDisplay();
-        renderItems();
-        renderLocations();
-        updateTmcDisplay();
-        renderFeedbacks();
-        showToast('Welcome to Taifa Market, ' + currentUser.name + '!', 'success');
-    }
+    <!-- Item Detail Modal -->
+    <div class="modal-overlay" id="itemDetailModal">
+        <div class="modal detail-modal">
+            <button class="close-btn" onclick="closeModal('itemDetailModal')">&times;</button>
+            <div id="itemDetailContent"></div>
+        </div>
+    </div>
 
-    function handleSignIn(e) {
-        e.preventDefault();
-        var mobile = document.getElementById('signinMobile').value;
-        var password = document.getElementById('signinPassword').value;
-        var user = users.find(function(u) { return u.mobile === mobile && u.password === password; });
-        
-        if (!user) {
-            showToast('Invalid mobile number or password. Please try again.', 'error');
-            return false;
-        }
-        
-        currentUser = user;
-        userCoins = user.coins;
-        coinTransactions = user.transactions || [];
-        
-        closeAuthModal();
-        document.getElementById('landingPage').classList.add('hidden');
-        document.getElementById('appContainer').classList.add('active');
-        updateUserDisplay();
-        renderItems();
-        renderLocations();
-        updateTmcDisplay();
-        renderFeedbacks();
-        showToast('Welcome back, ' + user.name + '!', 'success');
-        return false;
-    }
+    <!-- Contact Unlock Modal -->
+    <div class="modal-overlay" id="contactUnlockModal">
+        <div class="modal unlock-modal">
+            <button class="close-btn" onclick="closeModal('contactUnlockModal')">&times;</button>
+            <div class="unlock-header">
+                <h3><i class="fas fa-lock" style="color: var(--coin);"></i> Unlock Contact Information</h3>
+                <p>Pay 20 KES to view seller's phone and email</p>
+            </div>
+            <div class="unlock-item-info" id="unlockItemInfo"></div>
+            <div class="payment-steps">
+                <h4><i class="fas fa-mobile-alt"></i> Payment Instructions</h4>
+                <div class="payment-step">
+                    <div class="step-num">1</div>
+                    <p>Go to <strong>M-Pesa</strong> on your phone</p>
+                </div>
+                <div class="payment-step">
+                    <div class="step-num">2</div>
+                    <p>Select <strong>Lipa na M-Pesa</strong> → <strong>Paybill</strong></p>
+                </div>
+                <div class="payment-step">
+                    <div class="step-num">3</div>
+                    <p>Enter Business Number: <strong>247247</strong></p>
+                </div>
+                <div class="payment-step">
+                    <div class="step-num">4</div>
+                    <p>Account Number: <strong id="unlockAccountNum">TF-000000</strong> (Your Taifa Number)</p>
+                </div>
+                <div class="payment-step">
+                    <div class="step-num">5</div>
+                    <p>Amount: <strong>20 KES</strong></p>
+                </div>
+                <div class="payment-step">
+                    <div class="step-num">6</div>
+                    <p>Enter your <strong>M-Pesa PIN</strong> and confirm</p>
+                </div>
+            </div>
+            <div class="paybill-box">
+                <div class="paybill-label">Paybill Number</div>
+                <div class="paybill-number">247247</div>
+            </div>
+            <div class="account-box">
+                <div class="account-label">Account Number (Your Taifa No)</div>
+                <div class="account-number" id="unlockBuyerTaifa">TF-000000</div>
+            </div>
+            <div class="amount-box">
+                <div class="amount-label">Amount to Pay</div>
+                <div class="amount-value">20 KES</div>
+            </div>
+            <form id="unlockForm" onsubmit="submitUnlockRequest(event); return false;">
+                <div class="form-group">
+                    <label><i class="fas fa-mobile-alt"></i> Your M-Pesa Number</label>
+                    <input type="tel" id="unlockMpesaNumber" placeholder="e.g. 0712345678" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-receipt"></i> M-Pesa Confirmation Code (Optional)</label>
+                    <input type="text" id="unlockMpesaCode" placeholder="e.g. QJ7H2K9L1M">
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <i class="fas fa-check-circle"></i> I've Paid - Request Unlock
+                </button>
+            </form>
+            <p style="text-align: center; color: #888; margin-top: 1rem; font-size: 0.85rem;">
+                <i class="fas fa-info-circle"></i> Contact will be unlocked after admin verification (usually 5-10 minutes)
+            </p>
+        </div>
+    </div>
 
-    function logout() {
-        currentUser = null;
-        userCoins = 0;
-        coinTransactions = [];
-        document.getElementById('appContainer').classList.remove('active');
-        document.getElementById('landingPage').classList.remove('hidden');
-        document.getElementById('signinForm').reset();
-        document.getElementById('registerForm').reset();
-        document.getElementById('taifaCard').style.display = 'none';
-        document.getElementById('authTabs').style.display = 'flex';
-        document.getElementById('signinForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'block';
-        showToast('Logged out successfully.', 'info');
-    }
+    <!-- Exchange Modal -->
+    <div class="modal-overlay" id="exchangeModal">
+        <div class="modal exchange-modal">
+            <button class="close-btn" onclick="closeModal('exchangeModal')">&times;</button>
+            <h2><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC</h2>
+            <div class="exchange-summary">
+                <div class="label">Available Balance</div>
+                <div class="value"><span id="exchangeBalance">0</span> TMC</div>
+            </div>
+            <div class="form-group">
+                <label>Exchange Method</label>
+                <select id="exchangeMethod" onchange="updateExchangeRate()">
+                    <option value="mpesa">M-Pesa (Best Rate)</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="cash">Cash Pickup</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount to Exchange (TMC)</label>
+                <input type="number" id="exchangeAmount" placeholder="e.g. 100" oninput="calculateExchange()">
+            </div>
+            <div class="exchange-result-box">
+                <div class="label">You will receive</div>
+                <div class="value" id="exchangeResult">0 KES</div>
+            </div>
+            <div class="form-group">
+                <label>Recipient Details (M-Pesa Number / Bank Account / Agent)</label>
+                <input type="text" id="exchangeRecipient" placeholder="e.g. 0712345678 or Bank Account">
+            </div>
+            <button class="btn btn-coin" style="width: 100%;" onclick="processExchange()">
+                <i class="fas fa-check-circle"></i> Confirm Exchange
+            </button>
+        </div>
+    </div>
 
-    function updateUserDisplay() {
-        if (currentUser) {
-            document.getElementById('navUserName').textContent = currentUser.name;
-            document.getElementById('heroUserName').textContent = currentUser.name;
-            document.getElementById('heroTaifaNumber').textContent = currentUser.taifaNumber;
-            document.getElementById('navCoinBalance').textContent = userCoins;
-            document.getElementById('userTmcBalance').textContent = userCoins;
-            document.getElementById('generateTaifaNum').textContent = currentUser.taifaNumber;
-            document.getElementById('unlockBuyerTaifa').textContent = currentUser.taifaNumber;
-            document.getElementById('exchangeBalance').textContent = userCoins;
-            updateTmcKesValue();
-        }
-    }
+    <!-- Chat Modal -->
+    <div class="modal-overlay" id="chatModal">
+        <div class="modal chat-modal">
+            <div class="chat-header">
+                <span><i class="fas fa-user-circle"></i> <span id="chatSellerName">Seller</span></span>
+                <button class="close-btn" style="position: static; color: white;" onclick="closeModal('chatModal')">&times;</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
 
-    // ==================== NAVIGATION ====================
-    function scrollToSection(id) {
-        var el = document.getElementById(id);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('navLinks').classList.remove('active');
-        }
-    }
+    <div class="toast" id="toast"></div>
 
-    function toggleMobileMenu() {
-        document.getElementById('navLinks').classList.toggle('active');
-    }
+    <script>
+'''
 
-    // ==================== TMC FUNCTIONS ====================
-    function getTmcRate() {
-        return tmcBaseRate + (totalUnlocks * 0.01);
-    }
+with open('/mnt/agents/output/taifa_market_final_v2.html', 'a', encoding='utf-8') as f:
+    f.write(part2)
 
-    function updateTmcDisplay() {
-        var rate = getTmcRate();
-        document.getElementById('currentTmcRate').textContent = rate.toFixed(2);
-        document.getElementById('totalUnlocks').textContent = totalUnlocks;
-        document.getElementById('activeUsersCount').textContent = users.length;
-        document.getElementById('itemsListedCount').textContent = items.length;
-        document.getElementById('mpesaRate').textContent = '1 TMC = ' + rate.toFixed(2) + ' KES';
-        document.getElementById('bankRate').textContent = '1 TMC = ' + (rate * 0.98).toFixed(2) + ' KES';
-        document.getElementById('cashRate').textContent = '1 TMC = ' + (rate * 0.96).toFixed(2) + ' KES';
-        updateTmcKesValue();
-    }
-
-    function updateTmcKesValue() {
-        if (currentUser) {
-            var rate = getTmcRate();
-            document.getElementById('userTmcKesValue').textContent = (userCoins * rate).toFixed(2);
-        }
-    }
-
-    function calculateGeneratedTmc() {
-        var kes = parseFloat(document.getElementById('generateKesInput').value) || 0;
-        var tmc = Math.floor(kes / 12.5);
-        document.getElementById('generatedTmc').textContent = tmc;
-    }
-
-    function updateExchangeRate() {
-        calculateExchange();
-    }
-
-    function calculateExchange() {
-        var amount = parseInt(document.getElementById('exchangeAmount').value) || 0;
-        var method = document.getElementById('exchangeMethod').value;
-        var rate = getTmcRate();
-        var finalRate = method === 'mpesa' ? rate : method === 'bank' ? rate * 0.98 : rate * 0.96;
-        var result = amount * finalRate;
-        document.getElementById('exchangeResult').textContent = result.toFixed(2) + ' KES';
-    }
-
-    function processExchange() {
-        if (!currentUser) {
-            showToast('Please sign in to exchange TMC.', 'error');
-            return;
-        }
-        var amount = parseInt(document.getElementById('exchangeAmount').value);
-        var recipient = document.getElementById('exchangeRecipient').value.trim();
-        if (!amount || amount <= 0 || !recipient) {
-            showToast('Please enter amount and recipient details.', 'error');
-            return;
-        }
-        if (amount > userCoins) {
-            showToast('Insufficient TMC balance.', 'error');
-            return;
-        }
-        var method = document.getElementById('exchangeMethod').value;
-        var rate = getTmcRate();
-        var finalRate = method === 'mpesa' ? rate : method === 'bank' ? rate * 0.98 : rate * 0.96;
-        var kes = amount * finalRate;
-        
-        userCoins -= amount;
-        currentUser.coins = userCoins;
-        currentUser.transactions.push({ type: 'exchange', amount: amount, desc: 'Exchanged ' + kes.toFixed(2) + ' KES via ' + method.toUpperCase(), time: new Date().toLocaleString() });
-        localStorage.setItem('taifaUsers', JSON.stringify(users));
-        
-        updateUserDisplay();
-        showToast('Exchanged ' + amount + ' TMC for ' + kes.toFixed(2) + ' KES! Sent to ' + recipient, 'success');
-        closeModal('exchangeModal');
-        document.getElementById('exchangeAmount').value = '';
-        document.getElementById('exchangeRecipient').value = '';
-    }
-
-    // ==================== SHOP / ITEMS ====================
-    function renderItems() {
-        var html = '';
-        var searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            if (currentCategory !== 'all' && item.category !== currentCategory) continue;
-            if (searchTerm && !item.name.toLowerCase().includes(searchTerm) && !item.location.toLowerCase().includes(searchTerm)) continue;
-            
-            var commentsHtml = '';
-            for (var j = 0; j < item.comments.length; j++) {
-                commentsHtml += '<div class="comment"><strong>' + item.comments[j].author + ':</strong> ' + item.comments[j].text + '</div>';
-            }
-            
-            var isUnlocked = currentUser && item.unlocks && item.unlocks.find(function(u) { return u.buyerTaifa === currentUser.taifaNumber; });
-            var contactHtml = '';
-            if (isUnlocked) {
-                contactHtml = '<div style="background: #e8f5e9; padding: 0.8rem; border-radius: 10px; margin-bottom: 1rem;">' +
-                    '<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;"><i class="fas fa-phone" style="color: var(--accent);"></i> <strong>' + item.sellerPhone + '</strong></div>' +
-                    '<div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-envelope" style="color: var(--accent);"></i> <strong>' + item.sellerEmail + '</strong></div>' +
-                    '<div style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;"><i class="fas fa-check-circle"></i> Unlocked</div>' +
-                '</div>';
-            } else {
-                contactHtml = '<div class="contact-locked">' +
-                    '<i class="fas fa-lock"></i>' +
-                    '<span>Contact locked. Pay 20 KES to unlock phone & email</span>' +
-                '</div>';
-            }
-            
-            html += '<div class="item-card">' +
-                '<img src="' + item.image + '" alt="' + item.name + '" class="item-image-main" onclick="viewItemDetail(' + item.id + ')">' +
-                '<div class="item-body">' +
-                    '<div class="item-header">' +
-                        '<div class="item-title">' + item.name + '</div>' +
-                        '<div class="item-tmc-badge"><i class="fas fa-coins"></i> ' + Math.floor(item.price / getTmcRate()) + ' TMC</div>' +
-                    '</div>' +
-                    '<div class="item-price">KES ' + item.price.toLocaleString() + '</div>' +
-                    '<div class="item-meta">' +
-                        '<span><i class="fas fa-map-marker-alt"></i> ' + item.location + '</span>' +
-                        '<span><i class="fas fa-user"></i> ' + item.seller + '</span>' +
-                        '<span><i class="fas fa-id-card"></i> Taifa: ' + item.sellerTaifa + '</span>' +
-                    '</div>' +
-                    contactHtml +
-                    '<div class="item-actions">' +
-                        '<button class="btn-view" onclick="viewItemDetail(' + item.id + ')"><i class="fas fa-eye"></i> View</button>' +
-                        (isUnlocked ? 
-                            '<button class="btn-chat" onclick="openChat(\'' + item.seller + '\')"><i class="fas fa-comment"></i> Chat</button>' :
-                            '<button class="btn-contacts" onclick="showContactUnlock(' + item.id + ')"><i class="fas fa-lock"></i> Unlock (20 KES)</button>'
-                        ) +
-                    '</div>' +
-                    '<div class="comments-box">' +
-                        '<h4><i class="fas fa-comments"></i> Comments</h4>' +
-                        '<div class="comments-list" id="comments-' + item.id + '">' + commentsHtml + '</div>' +
-                        '<div class="comment-input">' +
-                            '<input type="text" id="comment-input-' + item.id + '" placeholder="Write a comment...">' +
-                            '<button onclick="addComment(' + item.id + ')"><i class="fas fa-paper-plane"></i></button>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
-        }
-        document.getElementById('itemsGrid').innerHTML = html || '<p style="text-align:center; color:#888; grid-column:1/-1; padding:3rem;">No items found.</p>';
-    }
-
-    function filterItems() { renderItems(); }
-    function filterCategory(cat) {
-        currentCategory = cat;
-        document.querySelectorAll('.category-filter button').forEach(function(b) { b.classList.remove('active'); });
-        event.target.classList.add('active');
-        renderItems();
-    }
-
-    function viewItemDetail(itemId) {
-        var item = items.find(function(i) { return i.id === itemId; });
-        if (!item) return;
-        currentDetailItem = item;
-        
-        var isUnlocked = currentUser && item.unlocks && item.unlocks.find(function(u) { return u.buyerTaifa === currentUser.taifaNumber; });
-        var contactHtml = '';
-        if (isUnlocked) {
-            contactHtml = '<div style="background: #e8f5e9; padding: 1rem; border-radius: 12px; margin: 1rem 0;">' +
-                '<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 1.1rem;"><i class="fas fa-phone" style="color: var(--accent);"></i> <strong>' + item.sellerPhone + '</strong></div>' +
-                '<div style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;"><i class="fas fa-envelope" style="color: var(--accent);"></i> <strong>' + item.sellerEmail + '</strong></div>' +
-                '<div style="font-size: 0.9rem; color: #888; margin-top: 0.5rem;"><i class="fas fa-check-circle"></i> Contact Unlocked</div>' +
-            '</div>';
-        } else {
-            contactHtml = '<div style="background: #fff3e0; padding: 1rem; border-radius: 12px; margin: 1rem 0; text-align: center;">' +
-                '<i class="fas fa-lock" style="font-size: 2rem; color: var(--coin); margin-bottom: 0.5rem;"></i>' +
-                '<div style="font-size: 1.1rem; color: var(--dark); margin-bottom: 0.5rem;">Contact Information Locked</div>' +
-                '<div style="color: #888; margin-bottom: 1rem;">Pay 20 KES to unlock phone number and email</div>' +
-                '<button class="btn btn-contacts" onclick="closeModal(\'itemDetailModal\'); showContactUnlock(' + item.id + ');"><i class="fas fa-lock"></i> Unlock Now (20 KES)</button>' +
-            '</div>';
-        }
-        
-        var html = '<div class="detail-images">' +
-            '<img src="' + item.images[0] + '" class="detail-main-img" id="detailMainImg">' +
-            '<div class="detail-side-images">';
-        for (var i = 0; i < item.images.length; i++) {
-            html += '<img src="' + item.images[i] + '" class="detail-side-img ' + (i === 0 ? 'active' : '') + '" onclick="switchDetailImage(' + i + ')" id="sideImg' + i + '">';
-        }
-        html += '</div></div>' +
-            '<div class="detail-info">' +
-                '<h3>' + item.name + '</h3>' +
-                '<div class="detail-price">KES ' + item.price.toLocaleString() + '</div>' +
-                '<div class="detail-meta">' +
-                    '<span><i class="fas fa-map-marker-alt"></i> ' + item.location + '</span>' +
-                    '<span><i class="fas fa-user"></i> ' + item.seller + '</span>' +
-                    '<span><i class="fas fa-id-card"></i> Taifa: ' + item.sellerTaifa + '</span>' +
-                    '<span><i class="fas fa-list"></i> ' + item.category + '</span>' +
-                '</div>' +
-                contactHtml +
-                '<div class="detail-actions">' +
-                    (isUnlocked ? 
-                        '<button class="btn btn-chat" style="flex: 1;" onclick="closeModal(\'itemDetailModal\'); openChat(\'' + item.seller + '\');"><i class="fas fa-comment"></i> Chat Seller</button>' :
-                        '<button class="btn btn-contacts" style="flex: 1;" onclick="closeModal(\'itemDetailModal\'); showContactUnlock(' + item.id + ');"><i class="fas fa-lock"></i> Unlock Contact (20 KES)</button>'
-                    ) +
-                '</div>' +
-            '</div>';
-        
-        document.getElementById('itemDetailContent').innerHTML = html;
-        openModal('itemDetailModal');
-    }
-
-    function switchDetailImage(index) {
-        var item = currentDetailItem;
-        if (!item) return;
-        document.getElementById('detailMainImg').src = item.images[index];
-        document.querySelectorAll('.detail-side-img').forEach(function(img) { img.classList.remove('active'); });
-        document.getElementById('sideImg' + index).classList.add('active');
-    }
-
-    function showContactUnlock(itemId) {
-        if (!currentUser) {
-            showToast('Please sign in to unlock contacts.', 'error');
-            showAuthModal('signin');
-            return;
-        }
-        var item = items.find(function(i) { return i.id === itemId; });
-        if (!item) return;
-        currentUnlockItem = item;
-        
-        var isAlreadyUnlocked = item.unlocks && item.unlocks.find(function(u) { return u.buyerTaifa === currentUser.taifaNumber; });
-        if (isAlreadyUnlocked) {
-            showToast('You have already unlocked this contact!', 'info');
-            return;
-        }
-        
-        document.getElementById('unlockItemInfo').innerHTML = 
-            '<p><span class="label">Item:</span><span class="value">' + item.name + '</span></p>' +
-            '<p><span class="label">Price:</span><span class="value">KES ' + item.price.toLocaleString() + '</span></p>' +
-            '<p><span class="label">Seller:</span><span class="value">' + item.seller + '</span></p>' +
-            '<p><span class="label">Seller Taifa:</span><span class="value">' + item.sellerTaifa + '</span></p>' +
-            '<p><span class="label">Location:</span><span class="value">' + item.location + '</span></p>';
-        document.getElementById('unlockAccountNum').textContent = currentUser.taifaNumber;
-        document.getElementById('unlockBuyerTaifa').textContent = currentUser.taifaNumber;
-        document.getElementById('unlockMpesaNumber').value = currentUser.mobile;
-        openModal('contactUnlockModal');
-    }
-
-    function submitUnlockRequest(e) {
-        e.preventDefault();
-        if (!currentUser || !currentUnlockItem) return;
-        
-        var mpesaNumber = document.getElementById('unlockMpesaNumber').value;
-        var mpesaCode = document.getElementById('unlockMpesaCode').value;
-        var item = currentUnlockItem;
-        
-        var unlockData = {
-            buyerId: currentUser.taifaNumber,
-            buyerName: currentUser.name,
-            buyerTaifa: currentUser.taifaNumber,
-            buyerMpesa: mpesaNumber,
-            sellerId: item.sellerTaifa,
-            sellerName: item.seller,
-            sellerTaifa: item.sellerTaifa,
-            itemId: item.id,
-            itemName: item.name,
-            amount: 20,
-            mpesaCode: mpesaCode,
-            status: 'pending',
-            requestedAt: new Date().toLocaleString()
-        };
-        
-        if (!item.unlocks) item.unlocks = [];
-        item.unlocks.push(unlockData);
-        localStorage.setItem('taifaItems', JSON.stringify(items));
-        
-        // Send email via Formspree
-        var formData = new FormData();
-        formData.append('Buyer Name', currentUser.name);
-        formData.append('Buyer Taifa', currentUser.taifaNumber);
-        formData.append('Buyer M-Pesa', mpesaNumber);
-        formData.append('Seller Name', item.seller);
-        formData.append('Seller Taifa', item.sellerTaifa);
-        formData.append('Item', item.name);
-        formData.append('Item Price', item.price);
-        formData.append('Item Location', item.location);
-        formData.append('Amount Paid', '20 KES');
-        formData.append('M-Pesa Code', mpesaCode || 'Not provided');
-        formData.append('Status', 'PENDING VERIFICATION');
-        formData.append('Time', new Date().toLocaleString());
-        
-        fetch('https://formspree.io/f/xnqevjdr', {
-            method: 'POST',
-            body: formData,
-            headers: { 'Accept': 'application/json' }
-        }).then(function(response) {
-            if (response.ok) {
-                showToast('Request submitted! Admin will verify shortly. Check your email for confirmation.', 'success');
-            } else {
-                showToast('Request saved. Email notification queued.', 'info');
-            }
-        }).catch(function(error) {
-            showToast('Request saved locally. Admin will process manually.', 'info');
-        });
-        
-        closeModal('contactUnlockModal');
-        document.getElementById('unlockForm').reset();
-        showToast('Unlock request sent! You will be notified once verified.', 'success');
-        return false;
-    }
-
-    // ==================== UPLOAD / SELL ====================
-    function previewUpload(index, e) {
-        var file = e.target.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(ev) {
-                var img = document.getElementById('previewImg' + index);
-                var box = document.getElementById('uploadBox' + index);
-                img.src = ev.target.result;
-                img.style.display = 'block';
-                box.classList.add('has-image');
-                uploadedImages[index - 1] = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function handleLocationChange() {
-        var select = document.getElementById('uploadLocation');
-        var custom = document.getElementById('uploadLocationCustom');
-        custom.style.display = select.value === 'other' ? 'block' : 'none';
-    }
-
-    function handleUpload(e) {
-        e.preventDefault();
-        if (!currentUser) {
-            showToast('Please sign in to upload items.', 'error');
-            return false;
-        }
-        
-        var uploadedCount = uploadedImages.filter(function(img) { return img !== null; }).length;
-        if (uploadedCount < 3) {
-            showToast('Please upload at least 3 photos of your item.', 'error');
-            return false;
-        }
-        
-        var name = document.getElementById('uploadName').value;
-        var price = parseInt(document.getElementById('uploadPrice').value);
-        var category = document.getElementById('uploadCategory').value;
-        var locSelect = document.getElementById('uploadLocation').value;
-        var location = locSelect === 'other' ? document.getElementById('uploadLocationCustom').value : locSelect;
-        var phone = document.getElementById('uploadPhone').value;
-        var email = document.getElementById('uploadEmail').value;
-        
-        if (!location) {
-            showToast('Please select a location.', 'error');
-            return false;
-        }
-        
-        var newItem = { 
-            id: Date.now(), 
-            name: name, 
-            price: price, 
-            location: location, 
-            category: category, 
-            image: uploadedImages[0], 
-            images: uploadedImages,
-            seller: currentUser.name, 
-            sellerTaifa: currentUser.taifaNumber,
-            sellerPhone: phone,
-            sellerEmail: email,
-            comments: [],
-            unlocks: []
-        };
-        items.unshift(newItem);
-        localStorage.setItem('taifaItems', JSON.stringify(items));
-        
-        userCoins += 2;
-        currentUser.coins = userCoins;
-        currentUser.transactions.push({ type: 'sell', amount: 2, desc: 'Uploaded ' + name, time: new Date().toLocaleString() });
-        localStorage.setItem('taifaUsers', JSON.stringify(users));
-        
-        updateUserDisplay();
-        updateTmcDisplay();
-        renderItems();
-        renderLocations();
-        
-        showToast('Item uploaded! You earned 2 TMC.', 'success');
-        document.getElementById('uploadForm').reset();
-        uploadedImages = [null, null, null];
-        for (var i = 1; i <= 3; i++) {
-            document.getElementById('previewImg' + i).style.display = 'none';
-            document.getElementById('uploadBox' + i).classList.remove('has-image');
-        }
-        document.getElementById('uploadLocationCustom').style.display = 'none';
-        scrollToSection('shopSection');
-        return false;
-    }
-
-    // ==================== LOCATIONS ====================
-    function renderLocations() {
-        var html = '';
-        for (var i = 0; i < locations.length; i++) {
-            var loc = locations[i];
-            var tagsHtml = '';
-            for (var j = 0; j < loc.top.length; j++) {
-                tagsHtml += '<span class="location-tag">' + loc.top[j] + '</span>';
-            }
-            html += '<div class="location-card" onclick="filterByLocation(\'' + loc.name + '\')">' +
-                '<h3><i class="fas fa-map-marker-alt"></i> ' + loc.name + '</h3>' +
-                '<div class="location-stats">' +
-                    '<span><i class="fas fa-box"></i> ' + loc.items + ' items</span>' +
-                    '<span><i class="fas fa-users"></i> ' + loc.sellers + ' sellers</span>' +
-                '</div>' +
-                '<div class="location-tags">' + tagsHtml + '</div>' +
-            '</div>';
-        }
-        document.getElementById('locationsGrid').innerHTML = html;
-    }
-
-    function filterByLocation(locName) {
-        document.getElementById('searchInput').value = locName;
-        scrollToSection('shopSection');
-        renderItems();
-        showToast('Showing items in ' + locName, 'info');
-    }
-
-    // ==================== FEEDBACK ====================
-    function setRating(rating) {
-        currentRating = rating;
-        document.getElementById('feedbackRating').value = rating;
-        var stars = document.querySelectorAll('#starRating i');
-        for (var i = 0; i < stars.length; i++) {
-            stars[i].style.color = i < rating ? 'var(--secondary)' : '#ddd';
-        }
-    }
-
-    function submitFeedback(e) {
-        e.preventDefault();
-        var name = document.getElementById('feedbackName').value;
-        var text = document.getElementById('feedbackText').value;
-        var rating = parseInt(document.getElementById('feedbackRating').value);
-        
-        feedbacks.unshift({ name: name, rating: rating, text: text });
-        localStorage.setItem('taifaFeedbacks', JSON.stringify(feedbacks));
-        renderFeedbacks();
-        
-        document.getElementById('feedbackName').value = '';
-        document.getElementById('feedbackText').value = '';
-        setRating(5);
-        
-        showToast('Thank you for your feedback!', 'success');
-        return false;
-    }
-
-    function renderFeedbacks() {
-        var html = '';
-        for (var i = 0; i < feedbacks.length; i++) {
-            var fb = feedbacks[i];
-            var stars = '';
-            for (var s = 0; s < 5; s++) {
-                stars += '<i class="fas fa-star" style="color: ' + (s < fb.rating ? 'var(--secondary)' : '#ddd') + ';"></i>';
-            }
-            html += '<div class="feedback-item">' +
-                '<div class="feedback-stars">' + stars + '</div>' +
-                '<div class="feedback-author">' + fb.name + '</div>' +
-                '<div class="feedback-text">' + fb.text + '</div>' +
-            '</div>';
-        }
-        document.getElementById('feedbackList').innerHTML = html;
-    }
-
-    // ==================== CHAT ====================
-    function openChat(seller) {
-        document.getElementById('chatSellerName').textContent = seller;
-        document.getElementById('chatMessages').innerHTML = '<div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>';
-        openModal('chatModal');
-    }
-
-    function sendChatMessage() {
-        var input = document.getElementById('chatInput');
-        var text = input.value.trim();
-        if (!text) return;
-        var box = document.getElementById('chatMessages');
-        box.innerHTML += '<div class="message sent">' + text + '</div>';
-        box.scrollTop = box.scrollHeight;
-        input.value = '';
-        setTimeout(function() {
-            box.innerHTML += '<div class="message received">Thanks for your message! I will reply shortly.</div>';
-            box.scrollTop = box.scrollHeight;
-        }, 1500);
-    }
-
-    function addComment(itemId) {
-        var input = document.getElementById('comment-input-' + itemId);
-        var text = input.value.trim();
-        if (!text) return;
-        var item = items.find(function(i) { return i.id === itemId; });
-        item.comments.push({author: currentUser ? currentUser.name : 'Guest', text: text});
-        document.getElementById('comments-' + itemId).innerHTML += '<div class="comment"><strong>' + (currentUser ? currentUser.name : 'Guest') + ':</strong> ' + text + '</div>';
-        input.value = '';
-        localStorage.setItem('taifaItems', JSON.stringify(items));
-        showToast('Comment posted!', 'success');
-    }
-
-    // ==================== MODALS & UTILS ====================
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    document.querySelectorAll('.modal-overlay').forEach(function(o) {
-        o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('active'); });
-    });
-
-    function showToast(msg, type) {
-        var t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = 'toast show ' + (type || '');
-        setTimeout(function() { t.classList.remove('show'); }, 4000);
-    }
-
-    // ==================== INIT ====================
-    setRating(5);
-    renderFeedbacks();
-    
-    // Check for existing session
-    var lastUser = localStorage.getItem('taifaLastUser');
-    if (lastUser) {
-        var user = users.find(function(u) { return u.taifaNumber === lastUser; });
-        if (user) {
-            currentUser = user;
-            userCoins = user.coins;
-            document.getElementById('landingPage').classList.add('hidden');
-            document.getElementById('appContainer').classList.add('active');
-            updateUserDisplay();
-            renderItems();
-            renderLocations();
-            updateTmcDisplay();
-            renderFeedbacks();
-        }
-    }
-    </script>
-</body>
-</html>'''
-
-with open('/mnt/agents/output/taifa_market_complete.html', 'a', encoding='utf-8') as f:
-    f.write(part3)
-
-print(f"Part 3 written: {len(part3)} chars")
-
-# Verify total file
-with open('/mnt/agents/output/taifa_market_complete.html', 'r', encoding='utf-8') as f:
-    total = f.read()
-
-print(f"\n=== TOTAL FILE ===")
-print(f"Total size: {len(total)} characters")
-print(f"Total lines: {total.count(chr(10))}")
-
-# Check for key features
-checks = [
-    ('Google Analytics', 'G-3JYQ3N9H8B'),
-    ('Formspree', 'formspree.io'),
-    ('Landing Page', 'landingPage'),
-    ('Auth Modal', 'authModal'),
-    ('Taifa Number', 'taifaNumber'),
-    ('Contact Unlock', 'contactUnlockModal'),
-    ('TMC Section', 'tmcSection'),
-    ('Shop Section', 'shopSection'),
-    ('Sell Section', 'sellSection'),
-    ('Locations', 'locationsSection'),
-    ('Feedback', 'feedbackSection'),
-    ('Exchange', 'exchangeModal'),
-    ('Chat', 'chatModal'),
-]
-
-print(f"\n=== FEATURE CHECKS ===")
-for name, keyword in checks:
-    found = keyword in total
-    print(f"{'✅' if found else '❌'} {name}: {keyword}")
+print(f"Part 2 written: {len(part2)} chars")
