@@ -257,4 +257,144 @@ html_code = '''<!DOCTYPE html>
                 }
                 html += '<div class="item-card">' +
                     '<img src="' + item.image + '" alt="' + item.name + '" class="item-image">' +
-                    '<div cl
+                    '<div class="toast" id="toast"></div>
+    <script>
+        var items = [
+            { id: 1, name: "Samsung Galaxy A54", price: 35000, location: "Nairobi, CBD", image: "https://images.unsplash.com/photo-1610945265078-3858a0828671?w=400&q=80", seller: "John Kamau", comments: [{author:"Alice", text:"Is the battery still good?"},{author:"John", text:"Yes, 95% health!"}] },
+            { id: 2, name: "Nike Air Force 1", price: 4500, location: "Mombasa, Nyali", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80", seller: "Sarah Ochieng", comments: [{author:"Mike", text:"What size?"}] },
+            { id: 3, name: "HP Laptop 15.6 inch", price: 28000, location: "Kisumu, Milimani", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80", seller: "Peter Njoroge", comments: [] },
+            { id: 4, name: "Wooden Dining Set", price: 12000, location: "Nakuru, Lanet", image: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=400&q=80", seller: "Mary Wanjiku", comments: [{author:"David", text:"Can you deliver?"},{author:"Mary", text:"Yes, extra 500 KES"}] },
+            { id: 5, name: "Sony PlayStation 5", price: 65000, location: "Nairobi, Westlands", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&q=80", seller: "James Mwangi", comments: [] },
+            { id: 6, name: "Designer Handbag", price: 3500, location: "Thika, Town Centre", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80", seller: "Grace Mutua", comments: [{author:"Linda", text:"Original or replica?"}] }
+        ];
+
+        var currentSlide = 0;
+        var slides = document.querySelectorAll('.bg-slide');
+        setInterval(function() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+
+        function renderItems() {
+            var html = '';
+            for(var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var commentsHtml = '';
+                for(var j = 0; j < item.comments.length; j++) {
+                    commentsHtml += '<div class="comment"><strong>' + item.comments[j].author + ':</strong> ' + item.comments[j].text + '</div>';
+                }
+                html += '<div class="item-card">' +
+                    '<img src="' + item.image + '" alt="' + item.name + '" class="item-image">' +
+                    '<div class="item-body">' +
+                        '<div class="item-title">' + item.name + '</div>' +
+                        '<div class="item-price">KES ' + item.price.toLocaleString() + '</div>' +
+                        '<div class="item-location"><i class="fas fa-map-marker-alt"></i> ' + item.location + '</div>' +
+                        '<div class="item-actions">' +
+                            '<button class="btn-chat" onclick="openChat(\'' + item.seller + '\')"><i class="fas fa-comment"></i> Chat</button>' +
+                            '<button class="btn-call" onclick="callSeller(\'' + item.seller + '\')"><i class="fas fa-phone"></i> Call</button>' +
+                        '</div>' +
+                        '<div class="comments-box">' +
+                            '<h4><i class="fas fa-comments"></i> Comments</h4>' +
+                            '<div class="comments-list" id="comments-' + item.id + '">' + commentsHtml + '</div>' +
+                            '<div class="comment-input">' +
+                                '<input type="text" id="comment-input-' + item.id + '" placeholder="Write a comment...">' +
+                                '<button onclick="addComment(' + item.id + ')"><i class="fas fa-paper-plane"></i></button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+            document.getElementById('itemsGrid').innerHTML = html;
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        document.querySelectorAll('.modal-overlay').forEach(function(o) {
+            o.addEventListener('click', function(e) { if(e.target === o) o.classList.remove('active'); });
+        });
+
+        function handleRegister(e) {
+            e.preventDefault();
+            var name = document.getElementById('regName').value;
+            showToast('Welcome, ' + name + '! Your account is ready.');
+            closeModal('registerModal');
+            document.getElementById('registerForm').reset();
+        }
+
+        function previewImage(e) {
+            var file = e.target.files[0];
+            if(file) {
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.querySelector('.image-preview').innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleUpload(e) {
+            e.preventDefault();
+            var name = document.getElementById('itemName').value;
+            var price = parseInt(document.getElementById('itemPrice').value);
+            var location = document.getElementById('itemLocation').value;
+            var img = document.querySelector('.image-preview img');
+            var image = img ? img.src : 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80';
+            items.unshift({ id: Date.now(), name: name, price: price, location: location, image: image, seller: "You", comments: [] });
+            renderItems();
+            showToast('Item uploaded successfully!');
+            closeModal('uploadModal');
+            document.getElementById('uploadForm').reset();
+            document.querySelector('.image-preview').innerHTML = '<div class="upload-placeholder"><i class="fas fa-camera" style="font-size: 2.5rem; color: #ccc; margin-bottom: 0.5rem;"></i><p>Click to upload photo</p></div>';
+        }
+
+        function openChat(seller) {
+            document.getElementById('chatSellerName').textContent = seller;
+            document.getElementById('chatMessages').innerHTML = '<div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>';
+            openModal('chatModal');
+        }
+
+        function sendMessage() {
+            var input = document.getElementById('chatInput');
+            var text = input.value.trim();
+            if(!text) return;
+            var box = document.getElementById('chatMessages');
+            box.innerHTML += '<div class="message sent">' + text + '</div>';
+            box.scrollTop = box.scrollHeight;
+            input.value = '';
+            setTimeout(function() {
+                box.innerHTML += '<div class="message received">Thanks for your message! I will reply shortly.</div>';
+                box.scrollTop = box.scrollHeight;
+            }, 1200);
+        }
+
+        function callSeller(seller) {
+            window.location.href = 'tel:0112698570';
+            showToast('Calling seller: ' + seller + '...');
+        }
+
+        function addComment(itemId) {
+            var input = document.getElementById('comment-input-' + itemId);
+            var text = input.value.trim();
+            if(!text) return;
+            var item = items.find(function(i) { return i.id === itemId; });
+            item.comments.push({author: "You", text: text});
+            document.getElementById('comments-' + itemId).innerHTML += '<div class="comment"><strong>You:</strong> ' + text + '</div>';
+            input.value = '';
+            showToast('Comment posted!');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        }
+
+        function toggleMobileMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+
+        renderItems();
+    </script>
+</body>
+</html>
