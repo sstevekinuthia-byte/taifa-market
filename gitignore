@@ -1,0 +1,38 @@
+cd /mnt/agents/output/app
+
+# Create the ignore file
+cat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+
+# Temporary files
+*.tmp
+.cache/
+EOF
