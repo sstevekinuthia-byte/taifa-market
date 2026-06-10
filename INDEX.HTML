@@ -1,0 +1,266 @@
+//@version=5
+indicator("Enhanced Calculus Forex System", overlay=true, max_bars_back=500)
+
+// ============================================================================
+// PART 1: INPUTS & CONFIGURATION
+// ============================================================================
+
+// Pair selection (affects thresholds)
+pairInput = input.string("EUR/USD", "USD Pair", options=["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD"])
+
+// Timeframe
+tfInput = input.timeframe("60", "Timeframe")
+
+// Layer 1: Wavelet Approximation (using EMA cascade as proxy)
+waveletLength = input.int(20, "Wavelet Smoothing Length", minval=10, maxval=50)
+waveletSigma = input.float(3.0, "Smoothing Factor", minval=1.0, maxval=10.0)
+
+// Layer 2: Regime Detection
+regimeLookback = input.int(20, "Regime Volatility Lookback", minval=10, maxval=50)
+regimeThreshold = input.float(0.6, "Min Regime Confidence", minval=0.5, maxval=0.9, step=0.1)
+
+// Layer 3: Calculus Thresholds
+velocityThreshold = input.float(0.00015, "Velocity Threshold (δ₁)", minval=0.00005, maxval=0.0005, step=0.00001)
+accelThreshold = input.float(0.00005, "Acceleration Threshold (ε)", minval=0.00001, maxval=0.0002, step=0.00001)
+
+// Risk Management
+atrPeriod = input.int(14, "ATR Period", minval=5, maxval=30)
+slMultiplier = input.float(1.5, "Stop Loss ATR Multiplier", minval=0.5, maxval=3.0, step=0.1)
+tpMultiplier = input.float(2.5, "Take Profit ATR Multiplier", minval=1.0, maxval=5.0, step=0.1)
+entryOffset = input.float(0.3, "Entry Offset ATR Multiplier", minval=0.0, maxval=1.0, step=0.1)
+
+// Behavioral Layer (Manual COT Input)
+useCOT = input.bool(false, "Use COT Filter")
+cotScore = input.float(0.0, "Current COT Score", minval=-1.0, maxval=1.0, step=0.1)
+
+// Round Number Filter
+useRoundNumber = input.bool(true, "Use Round Number Filter")
+rnThreshold = input.float(0.2, "Round Number ATR Threshold", minval=0.1, maxval=0.5, step=0.05)
+
+// ============================================================================
+// PART 2: LAYER 1 — WAVELET NOISE REDUCTION (EMA CASCADE PROXY)
+// ============================================================================
+
+// TradingView doesn't have wavelets, so we use a cascade of EMAs with 
+// Gaussian-like weights as a practical proxy
+
+ema1 = ta.ema(close, math.round(waveletLength / 4))
+ema2 = ta.ema(ema1, math.round(waveletLength / 3))
+ema3 = ta.ema(ema2, math.round(waveletLength / 2))
+pClean = ta.ema(ema3, waveletLength)
+
+// Plot clean price
+plot(pClean, "Clean Price", color=color.new(color.blue, 50), linewidth=2)
+
+// ============================================================================
+// PART 3: LAYER 2 — REGIME DETECTION (VOLATILITY-BASED)
+// ============================================================================
+
+// Calculate log returns
+returns = math.log(close / close[1])
+
+// Realized volatility (20-period rolling standard deviation, annualized)
+rv = ta.stdev(returns, regimeLookback) * math.sqrt(252)
+
+// Regime classification using volatility percentiles
+// S1 (Calm): RV < 30th percentile of historical RV
+// S2 (Normal): RV between 30th and 80th percentile  
+// S3 (Turbulent): RV > 80th percentile
+
+rvLow = ta.percentile(rv, 100, 30)
+rvHigh = ta.percentile(rv, 100, 80)
+
+// Smooth the regime boundaries to avoid flickering
+rvSmooth = ta.ema(rv, 5)
+
+// Regime state detection
+isCalm = rvSmooth < rvLow
+isNormal = rvSmooth >= rvLow and rvSmooth <= rvHigh
+isTurbulent = rvSmooth > rvHigh
+
+// Regime confidence (how deep in the state we are)
+regimeConfidence = isNormal ? math.min(1.0, (rvSmooth - rvLow) / (rvHigh - rvLow + 0.0001)) : 0.0
+
+// Plot regime background
+regimeColor = isCalm ? color.new(color.green, 90) : isTurbulent ? color.new(color.red, 90) : color.new(color.blue, 95)
+bgcolor(regimeColor, title="Regime Background")
+
+// ============================================================================
+// PART 4: LAYER 3 — CALCULUS SIGNALS
+// ============================================================================
+
+// Step 5.1: First Derivative (Velocity) — Central Difference on Clean Price
+velocity = (pClean[1] - pClean[-1]) / 2
+
+// Step 5.2: Second Derivative (Acceleration)
+acceleration = pClean[1] - 2 * pClean + pClean[-1]
+
+// Step 5.3: Integral Momentum (14-period displacement)
+momentumPeriod = 14
+momentum = (pClean - pClean[momentumPeriod]) / momentumPeriod
+
+// ATR for risk management
+atr = ta.atr(atrPeriod)
+
+// ============================================================================
+// PART 5: BEHAVIORAL LAYER
+// ============================================================================
+
+// Round Number Proximity Filter
+// Find nearest major round number
+roundSize = pairInput == "USD/JPY" ? 1.0 : 0.01
+nearestRound = math.round(close / roundSize) * roundSize
+distanceToRound = math.abs(close - nearestRound)
+rnFilter = distanceToRound > (rnThreshold * atr) ? 1.0 : 0.0
+
+// Composite Behavioral Score
+bScore = useCOT ? (0.4 * cotScore + 0.4 * 0.0 + 0.2 * rnFilter) : (0.5 * 0.0 + 0.5 * rnFilter)
+// Note: Order flow not available in TradingView, so we weight COT and RN
+
+// ============================================================================
+// PART 6: COMPLETE SIGNAL LOGIC
+// ============================================================================
+
+// GATE 1: Regime Check — Must be Normal with confidence > threshold
+gate1 = isNormal and regimeConfidence > regimeThreshold
+
+// GATE 2: Velocity Check
+gate2Buy = velocity > velocityThreshold
+gate2Sell = velocity < -velocityThreshold
+
+// GATE 3: Acceleration Check
+gate3Buy = acceleration > 0
+gate3Sell = acceleration < 0
+
+// GATE 4: Momentum Check
+gate4Buy = momentum > 0
+gate4Sell = momentum < 0
+
+// GATE 5: Behavioral Check
+gate5Buy = bScore > -0.2
+gate5Sell = bScore < 0.2
+
+// GATE 6: Round Number Check
+gate6 = useRoundNumber ? rnFilter > 0.5 : true
+
+// COMPLETE BUY SIGNAL
+buySignal = gate1 and gate2Buy and gate3Buy and gate4Buy and gate5Buy and gate6
+
+// COMPLETE SELL SIGNAL  
+sellSignal = gate1 and gate2Sell and gate3Sell and gate4Sell and gate5Sell and gate6
+
+// ============================================================================
+// PART 7: ENTRY & EXIT CALCULATIONS
+// ============================================================================
+
+// Calculate entries, stops, and take profits only when signals fire
+var float entryPrice = na
+var float stopLoss = na
+var float takeProfit = na
+var int tradeDirection = 0  // 1=long, -1=short, 0=none
+
+// Entry on signal
+if buySignal and tradeDirection == 0
+    entryPrice := pClean + (entryOffset * atr)
+    stopLoss := entryPrice - (slMultiplier * atr)
+    takeProfit := entryPrice + (tpMultiplier * atr)
+    tradeDirection := 1
+
+if sellSignal and tradeDirection == 0
+    entryPrice := pClean - (entryOffset * atr)
+    stopLoss := entryPrice + (slMultiplier * atr)
+    takeProfit := entryPrice - (tpMultiplier * atr)
+    tradeDirection := -1
+
+// Exit conditions
+// Exit 1: Momentum fade (acceleration reversal)
+exitFadeLong = tradeDirection == 1 and acceleration < -accelThreshold
+exitFadeShort = tradeDirection == -1 and acceleration > accelThreshold
+
+// Exit 2: Regime change
+exitRegime = tradeDirection != 0 and not isNormal
+
+// Exit 3: Price hits target or stop
+exitTargetLong = tradeDirection == 1 and high >= takeProfit
+exitStopLong = tradeDirection == 1 and low <= stopLoss
+exitTargetShort = tradeDirection == -1 and low <= takeProfit
+exitStopShort = tradeDirection == -1 and high >= stopLoss
+
+// Execute exit
+if (exitFadeLong or exitRegime or exitTargetLong or exitStopLong) and tradeDirection == 1
+    tradeDirection := 0
+    entryPrice := na
+    stopLoss := na
+    takeProfit := na
+
+if (exitFadeShort or exitRegime or exitTargetShort or exitStopShort) and tradeDirection == -1
+    tradeDirection := 0
+    entryPrice := na
+    stopLoss := na
+    takeProfit := na
+
+// ============================================================================
+// PART 8: VISUALIZATION
+// ============================================================================
+
+// Plot signals
+plotshape(buySignal and tradeDirection[1] == 0, "BUY Signal", shape.triangleup, 
+          location.belowbar, color.green, size=size.normal, text="BUY", textcolor=color.white)
+
+plotshape(sellSignal and tradeDirection[1] == 0, "SELL Signal", shape.triangledown, 
+          location.abovebar, color.red, size=size.normal, text="SELL", textcolor=color.white)
+
+// Plot active trade levels
+plot(tradeDirection == 1 ? entryPrice : na, "Long Entry", color.green, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == 1 ? stopLoss : na, "Long Stop", color.red, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == 1 ? takeProfit : na, "Long TP", color.lime, style=plot.style_linebr, linewidth=1)
+
+plot(tradeDirection == -1 ? entryPrice : na, "Short Entry", color.red, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == -1 ? stopLoss : na, "Short Stop", color.maroon, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == -1 ? takeProfit : na, "Short TP", color.orange, style=plot.style_linebr, linewidth=1)
+
+// ============================================================================
+// PART 9: DASHBOARD & ALERTS
+// ============================================================================
+
+// Create info panel
+var table infoPanel = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 80), 
+                               frame_color=color.gray, frame_width=1)
+
+if barstate.islast
+    table.cell(infoPanel, 0, 0, "REGIME:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 0, isCalm ? "CALM (No Trade)" : isTurbulent ? "TURBULENT (Reduce)" : "NORMAL (Trade)", 
+               text_color=isCalm ? color.green : isTurbulent ? color.red : color.blue, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 1, "CONFIDENCE:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 1, str.tostring(regimeConfidence, "#.##"), text_color=color.white, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 2, "VELOCITY:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 2, str.tostring(velocity, "#.#####"), 
+               text_color=velocity > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 3, "ACCELERATION:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 3, str.tostring(acceleration, "#.#####"), 
+               text_color=acceleration > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 4, "MOMENTUM:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 4, str.tostring(momentum, "#.#####"), 
+               text_color=momentum > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 5, "BEHAVIORAL:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 5, str.tostring(bScore, "#.##"), text_color=color.white, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 6, "ROUND FILTER:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 6, rnFilter > 0.5 ? "PASS" : "BLOCK", 
+               text_color=rnFilter > 0.5 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 7, "TRADE STATUS:", text_color=color.white, text_size=size.small)
+    statusText = tradeDirection == 1 ? "LONG ACTIVE" : tradeDirection == -1 ? "SHORT ACTIVE" : "FLAT"
+    statusColor = tradeDirection == 1 ? color.green : tradeDirection == -1 ? color.red : color.gray
+    table.cell(infoPanel, 1, 7, statusText, text_color=statusColor, text_size=size.small)
+
+// Alerts
+alertcondition(buySignal, "Calculus BUY Signal", "Enhanced Calculus: BUY signal on {{ticker}}")
+alertcondition(sellSignal, "Calculus SELL Signal", "Enhanced Calculus: SELL signal on {{ticker}}")
+alertcondition(tradeDirection != 0 and tradeDirection[1] == 0, "Trade Entry", "Trade entered on {{ticker}}")
+alertcondition(tradeDirection == 0 and tradeDirection[1] != 0, "Trade Exit", "Trade exited on {{ticker}}")
