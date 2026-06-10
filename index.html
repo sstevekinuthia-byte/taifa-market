@@ -1,596 +1,266 @@
+//@version=5
+indicator("Enhanced Calculus Forex System", overlay=true, max_bars_back=500)
 
-part2 = '''
-    <!-- LANDING PAGE -->
-    <div class="landing-page" id="landingPage">
-        <div class="landing-bg" id="landingBg">
-            <div class="landing-bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=1920&q=80');"></div>
-            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1920&q=80');"></div>
-            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1920&q=80');"></div>
-            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80');"></div>
-            <div class="landing-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1606293926075-69a00febf780?w=1920&q=80');"></div>
-        </div>
-        <div class="landing-content">
-            <h1><i class="fas fa-store"></i> Taifa Market</h1>
-            <p class="landing-motto">"Twende Tukafanye Shopping"</p>
-            <div class="landing-buttons">
-                <button class="btn btn-secondary" onclick="showAuthModal('signin')">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-                <button class="btn btn-primary" onclick="showAuthModal('register')">
-                    <i class="fas fa-user-plus"></i> Join / Register
-                </button>
-            </div>
-        </div>
-    </div>
+// ============================================================================
+// PART 1: INPUTS & CONFIGURATION
+// ============================================================================
 
-    <!-- AUTH MODAL -->
-    <div class="modal-overlay" id="authModal">
-        <div class="auth-modal">
-            <button class="close-btn" onclick="closeAuthModal()">&times;</button>
-            <h2 id="authTitle"><i class="fas fa-store"></i> Taifa Market</h2>
-            <div class="auth-tabs" id="authTabs">
-                <button class="auth-tab active" onclick="switchAuthTab('signin')">Sign In</button>
-                <button class="auth-tab" onclick="switchAuthTab('register')">Join / Register</button>
-            </div>
-            <div class="auth-form active" id="signinForm">
-                <form onsubmit="handleSignIn(event); return false;">
-                    <div class="form-group">
-                        <label><i class="fas fa-mobile-alt"></i> Mobile Number</label>
-                        <input type="tel" id="signinMobile" placeholder="e.g. 0712345678" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-lock"></i> Password</label>
-                        <input type="password" id="signinPassword" placeholder="Enter your password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                </form>
-                <p style="text-align: center; margin-top: 1.5rem; color: #888;">
-                    New here? <a href="#" onclick="switchAuthTab('register')" style="color: var(--primary); font-weight: 600;">Join now</a>
-                </p>
-            </div>
-            <div class="auth-form" id="registerForm">
-                <form onsubmit="handleRegister(event); return false;">
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Full Name</label>
-                        <input type="text" id="regName" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-mobile-alt"></i> Mobile Number</label>
-                        <input type="tel" id="regMobile" placeholder="e.g. 0712345678" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-lock"></i> Password</label>
-                        <input type="password" id="regPassword" placeholder="Min 8 chars, 1 number, 1 symbol" required oninput="checkPasswordStrength()">
-                        <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 0.3rem;">Must be 8+ characters with at least 1 number and 1 symbol</p>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-check-circle"></i> Confirm Password</label>
-                        <input type="password" id="regConfirmPassword" placeholder="Re-enter your password" required oninput="verifyPasswordMatch()">
-                        <div class="verify-badge" id="verifyBadge"><i class="fas fa-check-circle"></i> Passwords match</div>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-gift"></i> Referral Code (Optional)</label>
-                        <input type="text" id="regReferral" placeholder="Enter referrer's Taifa Number">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="registerBtn" disabled>
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
-                </form>
-            </div>
-            <div class="taifa-card" id="taifaCard" style="display:none;">
-                <h3><i class="fas fa-id-card"></i> Your Taifa Number</h3>
-                <div class="taifa-number" id="taifaNumberDisplay">TF-000000</div>
-                <p>Save this! Use it for TMC exchanges and referrals</p>
-                <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.1); border-radius: 10px;">
-                    <div style="font-size: 0.9rem;">You received: <strong>5 TMC</strong> registration bonus!</div>
-                    <div id="referralBonus" style="font-size: 0.9rem; display: none;">+ <strong>2 TMC</strong> referral bonus!</div>
-                </div>
-                <button class="btn btn-success" style="width: 100%; margin-top: 1rem;" onclick="enterApp()">
-                    <i class="fas fa-arrow-right"></i> Enter Taifa Market
-                </button>
-            </div>
-        </div>
-    </div>
+// Pair selection (affects thresholds)
+pairInput = input.string("EUR/USD", "USD Pair", options=["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD"])
 
-    <!-- MAIN APP -->
-    <div class="app-container" id="appContainer">
-        <nav>
-            <div class="nav-logo" onclick="scrollToSection('appHero')">
-                <i class="fas fa-store"></i> Taifa Market
-            </div>
-            <div class="nav-links" id="navLinks">
-                <a class="nav-link" onclick="scrollToSection('shopSection')">Shop</a>
-                <a class="nav-link" onclick="scrollToSection('tmcSection')">TMC</a>
-                <a class="nav-link" onclick="scrollToSection('sellSection')">Sell/Upload</a>
-                <a class="nav-link" onclick="scrollToSection('locationsSection')">Locations</a>
-                <a class="nav-link" onclick="scrollToSection('feedbackSection')">Feedback</a>
-                <div class="nav-user-info">
-                    <div class="nav-coin"><i class="fas fa-coins"></i> <span id="navCoinBalance">0</span> TMC</div>
-                    <span id="navUserName">User</span>
-                    <button class="logout-btn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <i class="fas fa-bars"></i>
-            </div>
-        </nav>
+// Timeframe
+tfInput = input.timeframe("60", "Timeframe")
 
-        <section class="app-hero" id="appHero">
-            <div class="app-bg-slideshow" id="appBg">
-                <div class="app-bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&q=80');"></div>
-                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=80');"></div>
-                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80');"></div>
-                <div class="app-bg-slide" style="background-image: url('https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1920&q=80');"></div>
-            </div>
-            <div class="app-hero-content">
-                <div class="welcome">Welcome back, <span id="heroUserName">User</span>!</div>
-                <h1><i class="fas fa-store"></i> Taifa Market</h1>
-                <div class="taifa-display">
-                    <i class="fas fa-id-card"></i> Taifa Number: <span id="heroTaifaNumber">TF-000000</span>
-                </div>
-                <div style="margin-top: 2rem;">
-                    <button class="btn btn-primary" onclick="scrollToSection('shopSection')">
-                        <i class="fas fa-shopping-bag"></i> Start Shopping
-                    </button>
-                    <button class="btn btn-coin" onclick="scrollToSection('tmcSection')">
-                        <i class="fas fa-coins"></i> My TMC
-                    </button>
-                    <button class="btn btn-success" onclick="scrollToSection('sellSection')">
-                        <i class="fas fa-cloud-upload-alt"></i> Sell Item
-                    </button>
-                </div>
-            </div>
-        </section>
+// Layer 1: Wavelet Approximation (using EMA cascade as proxy)
+waveletLength = input.int(20, "Wavelet Smoothing Length", minval=10, maxval=50)
+waveletSigma = input.float(3.0, "Smoothing Factor", minval=1.0, maxval=10.0)
 
-        <section class="section" id="shopSection">
-            <div class="section-header">
-                <h2><i class="fas fa-shopping-bag" style="color: var(--primary);"></i> Shop</h2>
-                <p>Browse items for sale across all locations</p>
-            </div>
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search items, brands, locations..." onkeyup="filterItems()">
-                <button onclick="filterItems()"><i class="fas fa-search"></i></button>
-            </div>
-            <div class="category-filter" id="categoryFilter">
-                <button class="active" onclick="filterCategory('all')">All</button>
-                <button onclick="filterCategory('Electronics')">Electronics</button>
-                <button onclick="filterCategory('Fashion')">Fashion</button>
-                <button onclick="filterCategory('Home')">Home</button>
-                <button onclick="filterCategory('Gaming')">Gaming</button>
-            </div>
-            <div class="items-grid" id="itemsGrid"></div>
-        </section>
+// Layer 2: Regime Detection
+regimeLookback = input.int(20, "Regime Volatility Lookback", minval=10, maxval=50)
+regimeThreshold = input.float(0.6, "Min Regime Confidence", minval=0.5, maxval=0.9, step=0.1)
 
-        <section class="section" id="sellSection">
-            <div class="section-header">
-                <h2><i class="fas fa-cloud-upload-alt" style="color: var(--accent);"></i> Sell Your Item</h2>
-                <p>Upload photos, set price, and reach buyers near you</p>
-            </div>
-            <div class="upload-container">
-                <form id="uploadForm" onsubmit="handleUpload(event); return false;">
-                    <div class="form-group">
-                        <label><i class="fas fa-images"></i> Item Photos (Minimum 3 required)</label>
-                        <div class="image-upload-grid">
-                            <div class="upload-box" id="uploadBox1" onclick="document.getElementById('fileInput1').click()">
-                                <i class="fas fa-plus upload-icon"></i>
-                                <img id="previewImg1">
-                                <input type="file" id="fileInput1" accept="image/*" onchange="previewUpload(1, event)">
-                            </div>
-                            <div class="upload-box" id="uploadBox2" onclick="document.getElementById('fileInput2').click()">
-                                <i class="fas fa-plus upload-icon"></i>
-                                <img id="previewImg2">
-                                <input type="file" id="fileInput2" accept="image/*" onchange="previewUpload(2, event)">
-                            </div>
-                            <div class="upload-box" id="uploadBox3" onclick="document.getElementById('fileInput3').click()">
-                                <i class="fas fa-plus upload-icon"></i>
-                                <img id="previewImg3">
-                                <input type="file" id="fileInput3" accept="image/*" onchange="previewUpload(3, event)">
-                            </div>
-                        </div>
-                        <div class="upload-hint"><i class="fas fa-info-circle"></i> Click boxes to upload. All 3 photos are required.</div>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-tag"></i> Item Name</label>
-                        <input type="text" id="uploadName" placeholder="What are you selling?" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-list"></i> Category</label>
-                        <select id="uploadCategory" required>
-                            <option value="">Select category</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Fashion">Fashion</option>
-                            <option value="Home">Home & Furniture</option>
-                            <option value="Gaming">Gaming</option>
-                            <option value="Vehicles">Vehicles</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-money-bill-wave"></i> Price (KES)</label>
-                        <input type="number" id="uploadPrice" placeholder="e.g. 2500" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-map-marker-alt"></i> Location <span style="color: var(--primary);">*</span></label>
-                        <select id="uploadLocation" required onchange="handleLocationChange()">
-                            <option value="">Select location</option>
-                            <option value="Nairobi, CBD">Nairobi, CBD</option>
-                            <option value="Nairobi, Westlands">Nairobi, Westlands</option>
-                            <option value="Nairobi, Eastleigh">Nairobi, Eastleigh</option>
-                            <option value="Mombasa, Nyali">Mombasa, Nyali</option>
-                            <option value="Mombasa, Old Town">Mombasa, Old Town</option>
-                            <option value="Kisumu, Milimani">Kisumu, Milimani</option>
-                            <option value="Kisumu, Kondele">Kisumu, Kondele</option>
-                            <option value="Nakuru, Lanet">Nakuru, Lanet</option>
-                            <option value="Nakuru, CBD">Nakuru, CBD</option>
-                            <option value="Thika, Town Centre">Thika, Town Centre</option>
-                            <option value="Eldoret, CBD">Eldoret, CBD</option>
-                            <option value="other">Other (specify below)</option>
-                        </select>
-                        <input type="text" id="uploadLocationCustom" placeholder="Enter your location" style="display:none; margin-top:0.8rem;">
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-align-left"></i> Description</label>
-                        <textarea id="uploadDesc" rows="3" placeholder="Describe your item condition, features, etc."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-phone"></i> Your Phone Number (Hidden from public)</label>
-                        <input type="tel" id="uploadPhone" placeholder="e.g. 0712345678" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-envelope"></i> Your Email (Hidden from public)</label>
-                        <input type="email" id="uploadEmail" placeholder="your@email.com" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fas fa-cloud-upload-alt"></i> Upload Item
-                    </button>
-                </form>
-            </div>
-        </section>
+// Layer 3: Calculus Thresholds
+velocityThreshold = input.float(0.00015, "Velocity Threshold (δ₁)", minval=0.00005, maxval=0.0005, step=0.00001)
+accelThreshold = input.float(0.00005, "Acceleration Threshold (ε)", minval=0.00001, maxval=0.0002, step=0.00001)
 
-        <section class="tmc-section" id="tmcSection">
-            <div class="section-header" style="color: white;">
-                <h2><i class="fas fa-coins" style="color: var(--coin);"></i> Taifa Market Coin (TMC)</h2>
-                <p style="color: #bdc3c7;">Market-driven digital currency. Value rises with every contact unlock.</p>
-            </div>
-            <div class="tmc-value-card">
-                <h3><i class="fas fa-chart-line"></i> Current TMC Value</h3>
-                <div class="tmc-value-big">1 TMC = <span id="currentTmcRate">10.00</span> KES</div>
-                <p>Value updates in real-time based on market activity</p>
-                <div class="tmc-stats">
-                    <div class="tmc-stat">
-                        <div class="tmc-stat-label">Total Unlocks</div>
-                        <div class="tmc-stat-value" id="totalUnlocks">0</div>
-                    </div>
-                    <div class="tmc-stat">
-                        <div class="tmc-stat-label">Active Users</div>
-                        <div class="tmc-stat-value" id="activeUsersCount">0</div>
-                    </div>
-                    <div class="tmc-stat">
-                        <div class="tmc-stat-label">Items Listed</div>
-                        <div class="tmc-stat-value" id="itemsListedCount">0</div>
-                    </div>
-                    <div class="tmc-stat">
-                        <div class="tmc-stat-label">24h Change</div>
-                        <div class="tmc-stat-value" id="dailyChange">+0.0%</div>
-                    </div>
-                </div>
-            </div>
-            <div class="tmc-balance-display">
-                <div class="tmc-balance-box">
-                    <div class="label">Your Balance</div>
-                    <div class="value"><span id="userTmcBalance">0</span> TMC</div>
-                    <div class="sub">Earn more by selling and unlocking contacts</div>
-                </div>
-                <div class="tmc-balance-box">
-                    <div class="label">Value in KES</div>
-                    <div class="value" style="color: white;"><span id="userTmcKesValue">0</span> KES</div>
-                    <div class="sub">Based on current TMC rate</div>
-                </div>
-            </div>
-            <div class="exchange-card">
-                <h3><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC for Money</h3>
-                <p>Convert your earned coins directly to M-Pesa, bank transfer, or cash</p>
-                <div class="exchange-options">
-                    <div class="exchange-option">
-                        <i class="fas fa-mobile-alt"></i>
-                        <h4>M-Pesa</h4>
-                        <div class="rate" id="mpesaRate">1 TMC = 10.00 KES</div>
-                        <p>Instant to your phone</p>
-                    </div>
-                    <div class="exchange-option">
-                        <i class="fas fa-university"></i>
-                        <h4>Bank Transfer</h4>
-                        <div class="rate" id="bankRate">1 TMC = 9.80 KES</div>
-                        <p>1-2 business days</p>
-                    </div>
-                    <div class="exchange-option">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <h4>Cash Pickup</h4>
-                        <div class="rate" id="cashRate">1 TMC = 9.60 KES</div>
-                        <p>At any Taifa agent</p>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button class="btn btn-coin" onclick="openModal('exchangeModal')">
-                        <i class="fas fa-hand-holding-usd"></i> Exchange Now
-                    </button>
-                </div>
-            </div>
-            <div class="generate-section">
-                <h3><i class="fas fa-plus-circle" style="color: var(--accent);"></i> Generate TMC via M-Pesa</h3>
-                <p>Buy TMC coins directly using M-Pesa</p>
-                <div class="mpesa-steps">
-                    <div class="mpesa-step">
-                        <div class="mpesa-step-num">1</div>
-                        <h4>Go to M-Pesa</h4>
-                        <p>Select Lipa na M-Pesa → Paybill</p>
-                    </div>
-                    <div class="mpesa-step">
-                        <div class="mpesa-step-num">2</div>
-                        <h4>Enter Paybill</h4>
-                        <p><strong>Business No: 247247</strong></p>
-                    </div>
-                    <div class="mpesa-step">
-                        <div class="mpesa-step-num">3</div>
-                        <h4>Account Number</h4>
-                        <p>Your Taifa Number:<br><strong id="generateTaifaNum">TF-000000</strong></p>
-                    </div>
-                    <div class="mpesa-step">
-                        <div class="mpesa-step-num">4</div>
-                        <h4>Enter Amount</h4>
-                        <p>1 KES = 0.08 TMC</p>
-                    </div>
-                </div>
-                <div class="generate-calc">
-                    <p>Enter amount to see how many TMC you'll get:</p>
-                    <div class="generate-calc-row">
-                        <input type="number" id="generateKesInput" placeholder="KES amount" oninput="calculateGeneratedTmc()">
-                        <span class="arrow">→</span>
-                        <div class="generate-result"><span id="generatedTmc">0</span> TMC</div>
-                    </div>
-                </div>
-            </div>
-            <div class="tmc-rewards">
-                <div class="tmc-reward">
-                    <i class="fas fa-gift"></i>
-                    <h4>Earn Rewards</h4>
-                    <p>Get 2 TMC for every contact unlock</p>
-                </div>
-                <div class="tmc-reward">
-                    <i class="fas fa-user-plus"></i>
-                    <h4>Registration Bonus</h4>
-                    <p>Get 5 TMC free when you join</p>
-                </div>
-                <div class="tmc-reward">
-                    <i class="fas fa-users"></i>
-                    <h4>Referral Rewards</h4>
-                    <p>Get 2 TMC for every friend you refer</p>
-                </div>
-                <div class="tmc-reward">
-                    <i class="fas fa-chart-line"></i>
-                    <h4>Market Driven</h4>
-                    <p>TMC value increases with unlocks</p>
-                </div>
-            </div>
-        </section>
+// Risk Management
+atrPeriod = input.int(14, "ATR Period", minval=5, maxval=30)
+slMultiplier = input.float(1.5, "Stop Loss ATR Multiplier", minval=0.5, maxval=3.0, step=0.1)
+tpMultiplier = input.float(2.5, "Take Profit ATR Multiplier", minval=1.0, maxval=5.0, step=0.1)
+entryOffset = input.float(0.3, "Entry Offset ATR Multiplier", minval=0.0, maxval=1.0, step=0.1)
 
-        <section class="section" id="locationsSection">
-            <div class="section-header">
-                <h2><i class="fas fa-map-marked-alt" style="color: var(--primary);"></i> Market Locations</h2>
-                <p>Find items and sellers in your area</p>
-            </div>
-            <div class="locations-grid" id="locationsGrid"></div>
-        </section>
+// Behavioral Layer (Manual COT Input)
+useCOT = input.bool(false, "Use COT Filter")
+cotScore = input.float(0.0, "Current COT Score", minval=-1.0, maxval=1.0, step=0.1)
 
-        <section class="section" id="feedbackSection">
-            <div class="section-header">
-                <h2><i class="fas fa-comments" style="color: var(--secondary);"></i> Customer Feedback</h2>
-                <p>Share your experience with Taifa Market</p>
-            </div>
-            <div class="feedback-form-container">
-                <form onsubmit="submitFeedback(event); return false;">
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Your Name</label>
-                        <input type="text" id="feedbackName" placeholder="Enter your name" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-star"></i> Rating</label>
-                        <div class="star-rating" id="starRating">
-                            <i class="fas fa-star" onclick="setRating(1)"></i>
-                            <i class="fas fa-star" onclick="setRating(2)"></i>
-                            <i class="fas fa-star" onclick="setRating(3)"></i>
-                            <i class="fas fa-star" onclick="setRating(4)"></i>
-                            <i class="fas fa-star" onclick="setRating(5)"></i>
-                        </div>
-                        <input type="hidden" id="feedbackRating" value="5">
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-comment"></i> Your Feedback</label>
-                        <textarea id="feedbackText" rows="4" placeholder="Tell us about your experience..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <i class="fas fa-paper-plane"></i> Submit Feedback
-                    </button>
-                </form>
-            </div>
-            <div class="feedback-list" id="feedbackList"></div>
-        </section>
+// Round Number Filter
+useRoundNumber = input.bool(true, "Use Round Number Filter")
+rnThreshold = input.float(0.2, "Round Number ATR Threshold", minval=0.1, maxval=0.5, step=0.05)
 
-        <footer id="contactSection">
-            <div class="footer-grid">
-                <div class="footer-section">
-                    <h3><i class="fas fa-store"></i> About Taifa Market</h3>
-                    <p>Your trusted local marketplace. Buy and sell quality items, connect with trusted sellers, and shop with confidence using Taifa Market Coin.</p>
-                </div>
-                <div class="footer-section">
-                    <h3><i class="fas fa-link"></i> Quick Links</h3>
-                    <a onclick="scrollToSection('shopSection')"><i class="fas fa-shopping-bag"></i> Shop</a>
-                    <a onclick="scrollToSection('sellSection')"><i class="fas fa-cloud-upload-alt"></i> Sell Item</a>
-                    <a onclick="scrollToSection('tmcSection')"><i class="fas fa-coins"></i> Taifa Coin</a>
-                    <a onclick="scrollToSection('locationsSection')"><i class="fas fa-map-marked-alt"></i> Locations</a>
-                    <a onclick="scrollToSection('feedbackSection')"><i class="fas fa-comments"></i> Feedback</a>
-                </div>
-                <div class="footer-section">
-                    <h3><i class="fas fa-headset"></i> Customer Care</h3>
-                    <div class="care-box">
-                        <p><i class="fas fa-phone"></i> <a href="tel:0112698570">0112 698 570</a></p>
-                        <p><i class="fas fa-envelope"></i> <a href="mailto:sngethe332@gmail.com">sngethe332@gmail.com</a></p>
-                        <p><i class="fas fa-clock"></i> Mon - Sat: 8:00 AM - 8:00 PM</p>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3><i class="fas fa-coins"></i> Taifa Coin</h3>
-                    <div class="care-box">
-                        <p><i class="fas fa-gift"></i> Earn 2 TMC per unlock</p>
-                        <p><i class="fas fa-user-plus"></i> 5 TMC registration bonus</p>
-                        <p><i class="fas fa-users"></i> 2 TMC per referral</p>
-                    </div>
-                </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2026 Taifa Market. Twende Tukafanye Shopping!</p>
-            </div>
-        </footer>
-    </div>
+// ============================================================================
+// PART 2: LAYER 1 — WAVELET NOISE REDUCTION (EMA CASCADE PROXY)
+// ============================================================================
 
-    <!-- Item Detail Modal -->
-    <div class="modal-overlay" id="itemDetailModal">
-        <div class="modal detail-modal">
-            <button class="close-btn" onclick="closeModal('itemDetailModal')">&times;</button>
-            <div id="itemDetailContent"></div>
-        </div>
-    </div>
+// TradingView doesn't have wavelets, so we use a cascade of EMAs with 
+// Gaussian-like weights as a practical proxy
 
-    <!-- Contact Unlock Modal -->
-    <div class="modal-overlay" id="contactUnlockModal">
-        <div class="modal unlock-modal">
-            <button class="close-btn" onclick="closeModal('contactUnlockModal')">&times;</button>
-            <div class="unlock-header">
-                <h3><i class="fas fa-lock" style="color: var(--coin);"></i> Unlock Contact Information</h3>
-                <p>Pay 20 KES to view seller's phone and email</p>
-            </div>
-            <div class="unlock-item-info" id="unlockItemInfo"></div>
-            <div class="payment-steps">
-                <h4><i class="fas fa-mobile-alt"></i> Payment Instructions</h4>
-                <div class="payment-step">
-                    <div class="step-num">1</div>
-                    <p>Go to <strong>M-Pesa</strong> on your phone</p>
-                </div>
-                <div class="payment-step">
-                    <div class="step-num">2</div>
-                    <p>Select <strong>Lipa na M-Pesa</strong> → <strong>Paybill</strong></p>
-                </div>
-                <div class="payment-step">
-                    <div class="step-num">3</div>
-                    <p>Enter Business Number: <strong>247247</strong></p>
-                </div>
-                <div class="payment-step">
-                    <div class="step-num">4</div>
-                    <p>Account Number: <strong id="unlockAccountNum">TF-000000</strong> (Your Taifa Number)</p>
-                </div>
-                <div class="payment-step">
-                    <div class="step-num">5</div>
-                    <p>Amount: <strong>20 KES</strong></p>
-                </div>
-                <div class="payment-step">
-                    <div class="step-num">6</div>
-                    <p>Enter your <strong>M-Pesa PIN</strong> and confirm</p>
-                </div>
-            </div>
-            <div class="paybill-box">
-                <div class="paybill-label">Paybill Number</div>
-                <div class="paybill-number">247247</div>
-            </div>
-            <div class="account-box">
-                <div class="account-label">Account Number (Your Taifa No)</div>
-                <div class="account-number" id="unlockBuyerTaifa">TF-000000</div>
-            </div>
-            <div class="amount-box">
-                <div class="amount-label">Amount to Pay</div>
-                <div class="amount-value">20 KES</div>
-            </div>
-            <form id="unlockForm" onsubmit="submitUnlockRequest(event); return false;">
-                <div class="form-group">
-                    <label><i class="fas fa-mobile-alt"></i> Your M-Pesa Number</label>
-                    <input type="tel" id="unlockMpesaNumber" placeholder="e.g. 0712345678" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-receipt"></i> M-Pesa Confirmation Code (Optional)</label>
-                    <input type="text" id="unlockMpesaCode" placeholder="e.g. QJ7H2K9L1M">
-                </div>
-                <button type="submit" class="btn btn-success" style="width: 100%;">
-                    <i class="fas fa-check-circle"></i> I've Paid - Request Unlock
-                </button>
-            </form>
-            <p style="text-align: center; color: #888; margin-top: 1rem; font-size: 0.85rem;">
-                <i class="fas fa-info-circle"></i> Contact will be unlocked after admin verification (usually 5-10 minutes)
-            </p>
-        </div>
-    </div>
+ema1 = ta.ema(close, math.round(waveletLength / 4))
+ema2 = ta.ema(ema1, math.round(waveletLength / 3))
+ema3 = ta.ema(ema2, math.round(waveletLength / 2))
+pClean = ta.ema(ema3, waveletLength)
 
-    <!-- Exchange Modal -->
-    <div class="modal-overlay" id="exchangeModal">
-        <div class="modal exchange-modal">
-            <button class="close-btn" onclick="closeModal('exchangeModal')">&times;</button>
-            <h2><i class="fas fa-exchange-alt" style="color: var(--coin);"></i> Exchange TMC</h2>
-            <div class="exchange-summary">
-                <div class="label">Available Balance</div>
-                <div class="value"><span id="exchangeBalance">0</span> TMC</div>
-            </div>
-            <div class="form-group">
-                <label>Exchange Method</label>
-                <select id="exchangeMethod" onchange="updateExchangeRate()">
-                    <option value="mpesa">M-Pesa (Best Rate)</option>
-                    <option value="bank">Bank Transfer</option>
-                    <option value="cash">Cash Pickup</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Amount to Exchange (TMC)</label>
-                <input type="number" id="exchangeAmount" placeholder="e.g. 100" oninput="calculateExchange()">
-            </div>
-            <div class="exchange-result-box">
-                <div class="label">You will receive</div>
-                <div class="value" id="exchangeResult">0 KES</div>
-            </div>
-            <div class="form-group">
-                <label>Recipient Details (M-Pesa Number / Bank Account / Agent)</label>
-                <input type="text" id="exchangeRecipient" placeholder="e.g. 0712345678 or Bank Account">
-            </div>
-            <button class="btn btn-coin" style="width: 100%;" onclick="processExchange()">
-                <i class="fas fa-check-circle"></i> Confirm Exchange
-            </button>
-        </div>
-    </div>
+// Plot clean price
+plot(pClean, "Clean Price", color=color.new(color.blue, 50), linewidth=2)
 
-    <!-- Chat Modal -->
-    <div class="modal-overlay" id="chatModal">
-        <div class="modal chat-modal">
-            <div class="chat-header">
-                <span><i class="fas fa-user-circle"></i> <span id="chatSellerName">Seller</span></span>
-                <button class="close-btn" style="position: static; color: white;" onclick="closeModal('chatModal')">&times;</button>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message received">Hi there! Interested in this item? Feel free to ask anything.</div>
-            </div>
-            <div class="chat-input">
-                <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
+// ============================================================================
+// PART 3: LAYER 2 — REGIME DETECTION (VOLATILITY-BASED)
+// ============================================================================
 
-    <div class="toast" id="toast"></div>
+// Calculate log returns
+returns = math.log(close / close[1])
 
-    <script>
-'''
+// Realized volatility (20-period rolling standard deviation, annualized)
+rv = ta.stdev(returns, regimeLookback) * math.sqrt(252)
 
-with open('/mnt/agents/output/taifa_market_final_v2.html', 'a', encoding='utf-8') as f:
-    f.write(part2)
+// Regime classification using volatility percentiles
+// S1 (Calm): RV < 30th percentile of historical RV
+// S2 (Normal): RV between 30th and 80th percentile  
+// S3 (Turbulent): RV > 80th percentile
 
-print(f"Part 2 written: {len(part2)} chars")
+rvLow = ta.percentile(rv, 100, 30)
+rvHigh = ta.percentile(rv, 100, 80)
+
+// Smooth the regime boundaries to avoid flickering
+rvSmooth = ta.ema(rv, 5)
+
+// Regime state detection
+isCalm = rvSmooth < rvLow
+isNormal = rvSmooth >= rvLow and rvSmooth <= rvHigh
+isTurbulent = rvSmooth > rvHigh
+
+// Regime confidence (how deep in the state we are)
+regimeConfidence = isNormal ? math.min(1.0, (rvSmooth - rvLow) / (rvHigh - rvLow + 0.0001)) : 0.0
+
+// Plot regime background
+regimeColor = isCalm ? color.new(color.green, 90) : isTurbulent ? color.new(color.red, 90) : color.new(color.blue, 95)
+bgcolor(regimeColor, title="Regime Background")
+
+// ============================================================================
+// PART 4: LAYER 3 — CALCULUS SIGNALS
+// ============================================================================
+
+// Step 5.1: First Derivative (Velocity) — Central Difference on Clean Price
+velocity = (pClean[1] - pClean[-1]) / 2
+
+// Step 5.2: Second Derivative (Acceleration)
+acceleration = pClean[1] - 2 * pClean + pClean[-1]
+
+// Step 5.3: Integral Momentum (14-period displacement)
+momentumPeriod = 14
+momentum = (pClean - pClean[momentumPeriod]) / momentumPeriod
+
+// ATR for risk management
+atr = ta.atr(atrPeriod)
+
+// ============================================================================
+// PART 5: BEHAVIORAL LAYER
+// ============================================================================
+
+// Round Number Proximity Filter
+// Find nearest major round number
+roundSize = pairInput == "USD/JPY" ? 1.0 : 0.01
+nearestRound = math.round(close / roundSize) * roundSize
+distanceToRound = math.abs(close - nearestRound)
+rnFilter = distanceToRound > (rnThreshold * atr) ? 1.0 : 0.0
+
+// Composite Behavioral Score
+bScore = useCOT ? (0.4 * cotScore + 0.4 * 0.0 + 0.2 * rnFilter) : (0.5 * 0.0 + 0.5 * rnFilter)
+// Note: Order flow not available in TradingView, so we weight COT and RN
+
+// ============================================================================
+// PART 6: COMPLETE SIGNAL LOGIC
+// ============================================================================
+
+// GATE 1: Regime Check — Must be Normal with confidence > threshold
+gate1 = isNormal and regimeConfidence > regimeThreshold
+
+// GATE 2: Velocity Check
+gate2Buy = velocity > velocityThreshold
+gate2Sell = velocity < -velocityThreshold
+
+// GATE 3: Acceleration Check
+gate3Buy = acceleration > 0
+gate3Sell = acceleration < 0
+
+// GATE 4: Momentum Check
+gate4Buy = momentum > 0
+gate4Sell = momentum < 0
+
+// GATE 5: Behavioral Check
+gate5Buy = bScore > -0.2
+gate5Sell = bScore < 0.2
+
+// GATE 6: Round Number Check
+gate6 = useRoundNumber ? rnFilter > 0.5 : true
+
+// COMPLETE BUY SIGNAL
+buySignal = gate1 and gate2Buy and gate3Buy and gate4Buy and gate5Buy and gate6
+
+// COMPLETE SELL SIGNAL  
+sellSignal = gate1 and gate2Sell and gate3Sell and gate4Sell and gate5Sell and gate6
+
+// ============================================================================
+// PART 7: ENTRY & EXIT CALCULATIONS
+// ============================================================================
+
+// Calculate entries, stops, and take profits only when signals fire
+var float entryPrice = na
+var float stopLoss = na
+var float takeProfit = na
+var int tradeDirection = 0  // 1=long, -1=short, 0=none
+
+// Entry on signal
+if buySignal and tradeDirection == 0
+    entryPrice := pClean + (entryOffset * atr)
+    stopLoss := entryPrice - (slMultiplier * atr)
+    takeProfit := entryPrice + (tpMultiplier * atr)
+    tradeDirection := 1
+
+if sellSignal and tradeDirection == 0
+    entryPrice := pClean - (entryOffset * atr)
+    stopLoss := entryPrice + (slMultiplier * atr)
+    takeProfit := entryPrice - (tpMultiplier * atr)
+    tradeDirection := -1
+
+// Exit conditions
+// Exit 1: Momentum fade (acceleration reversal)
+exitFadeLong = tradeDirection == 1 and acceleration < -accelThreshold
+exitFadeShort = tradeDirection == -1 and acceleration > accelThreshold
+
+// Exit 2: Regime change
+exitRegime = tradeDirection != 0 and not isNormal
+
+// Exit 3: Price hits target or stop
+exitTargetLong = tradeDirection == 1 and high >= takeProfit
+exitStopLong = tradeDirection == 1 and low <= stopLoss
+exitTargetShort = tradeDirection == -1 and low <= takeProfit
+exitStopShort = tradeDirection == -1 and high >= stopLoss
+
+// Execute exit
+if (exitFadeLong or exitRegime or exitTargetLong or exitStopLong) and tradeDirection == 1
+    tradeDirection := 0
+    entryPrice := na
+    stopLoss := na
+    takeProfit := na
+
+if (exitFadeShort or exitRegime or exitTargetShort or exitStopShort) and tradeDirection == -1
+    tradeDirection := 0
+    entryPrice := na
+    stopLoss := na
+    takeProfit := na
+
+// ============================================================================
+// PART 8: VISUALIZATION
+// ============================================================================
+
+// Plot signals
+plotshape(buySignal and tradeDirection[1] == 0, "BUY Signal", shape.triangleup, 
+          location.belowbar, color.green, size=size.normal, text="BUY", textcolor=color.white)
+
+plotshape(sellSignal and tradeDirection[1] == 0, "SELL Signal", shape.triangledown, 
+          location.abovebar, color.red, size=size.normal, text="SELL", textcolor=color.white)
+
+// Plot active trade levels
+plot(tradeDirection == 1 ? entryPrice : na, "Long Entry", color.green, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == 1 ? stopLoss : na, "Long Stop", color.red, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == 1 ? takeProfit : na, "Long TP", color.lime, style=plot.style_linebr, linewidth=1)
+
+plot(tradeDirection == -1 ? entryPrice : na, "Short Entry", color.red, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == -1 ? stopLoss : na, "Short Stop", color.maroon, style=plot.style_linebr, linewidth=1)
+plot(tradeDirection == -1 ? takeProfit : na, "Short TP", color.orange, style=plot.style_linebr, linewidth=1)
+
+// ============================================================================
+// PART 9: DASHBOARD & ALERTS
+// ============================================================================
+
+// Create info panel
+var table infoPanel = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 80), 
+                               frame_color=color.gray, frame_width=1)
+
+if barstate.islast
+    table.cell(infoPanel, 0, 0, "REGIME:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 0, isCalm ? "CALM (No Trade)" : isTurbulent ? "TURBULENT (Reduce)" : "NORMAL (Trade)", 
+               text_color=isCalm ? color.green : isTurbulent ? color.red : color.blue, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 1, "CONFIDENCE:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 1, str.tostring(regimeConfidence, "#.##"), text_color=color.white, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 2, "VELOCITY:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 2, str.tostring(velocity, "#.#####"), 
+               text_color=velocity > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 3, "ACCELERATION:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 3, str.tostring(acceleration, "#.#####"), 
+               text_color=acceleration > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 4, "MOMENTUM:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 4, str.tostring(momentum, "#.#####"), 
+               text_color=momentum > 0 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 5, "BEHAVIORAL:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 5, str.tostring(bScore, "#.##"), text_color=color.white, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 6, "ROUND FILTER:", text_color=color.white, text_size=size.small)
+    table.cell(infoPanel, 1, 6, rnFilter > 0.5 ? "PASS" : "BLOCK", 
+               text_color=rnFilter > 0.5 ? color.green : color.red, text_size=size.small)
+    
+    table.cell(infoPanel, 0, 7, "TRADE STATUS:", text_color=color.white, text_size=size.small)
+    statusText = tradeDirection == 1 ? "LONG ACTIVE" : tradeDirection == -1 ? "SHORT ACTIVE" : "FLAT"
+    statusColor = tradeDirection == 1 ? color.green : tradeDirection == -1 ? color.red : color.gray
+    table.cell(infoPanel, 1, 7, statusText, text_color=statusColor, text_size=size.small)
+
+// Alerts
+alertcondition(buySignal, "Calculus BUY Signal", "Enhanced Calculus: BUY signal on {{ticker}}")
+alertcondition(sellSignal, "Calculus SELL Signal", "Enhanced Calculus: SELL signal on {{ticker}}")
+alertcondition(tradeDirection != 0 and tradeDirection[1] == 0, "Trade Entry", "Trade entered on {{ticker}}")
+alertcondition(tradeDirection == 0 and tradeDirection[1] != 0, "Trade Exit", "Trade exited on {{ticker}}")
